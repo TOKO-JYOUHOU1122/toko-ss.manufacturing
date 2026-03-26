@@ -16,15 +16,34 @@ function createWindow() {
         },
     })
 
-    const LARAVEL_URL = process.env.APP_URL || 'http://127.0.0.1:8000'
+    // 本番環境（ビルド後）でも外部の config.json からURLを上書きできるようにする
+    let productionUrl = 'http://127.0.0.1:8000'; // デフォルトフォールバック
+    if (process.env.APP_URL) {
+        productionUrl = process.env.APP_URL;
+    }
 
+    try {
+        // exeと同じ階層に config.json があれば読み込む
+        const fs = require('node:fs');
+        const exeDir = path.dirname(app.getPath('exe'));
+        const configPath = path.join(exeDir, 'config.json');
+        if (fs.existsSync(configPath)) {
+            const configData = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+            if (configData.url) {
+                productionUrl = configData.url;
+            }
+        }
+    } catch (e) {
+        console.error('Config load error:', e);
+    }
+
+    const LARAVEL_URL = process.env.NODE_ENV !== 'production' ? (process.env.APP_URL || 'http://127.0.0.1:8000') : productionUrl;
+
+    // ☆ 開発/本番問わずサーバーURLを開く（Inertia対応のため）
+    win.loadURL(LARAVEL_URL);
+    
     if (process.env.NODE_ENV !== 'production') {
-        // ★ 開発時は Laravel（Inertia）を開く
-        win.loadURL(LARAVEL_URL)
-        win.webContents.openDevTools()
-    } else {
-        // ★ 本番は dist を読み込む（または本番もURLを開くなら loadURL に置き換え）
-        win.loadFile(path.join(__dirname, '../dist/index.html'))
+        win.webContents.openDevTools();
     }
 }
 

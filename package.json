@@ -4,14 +4,17 @@
     "main": "electron/main.cjs",
     "scripts": {
         "dev": "vite",
+        "start": "electron .",
         "build": "vite build",
         "electron:dev": "cross-env NODE_ENV=development LARAVEL_URL=http://127.0.0.1:8000 vite",
-        "electron:start": "electron ."
+        "electron:start": "electron .",
+        "electron:build": "electron-builder"
     },
     "devDependencies": {
         "axios": "^1.6.4",
         "cross-env": "^10.1.0",
-        "electron": "^40.2.1",
+        "electron": "^40.8.3",
+        "electron-builder": "^26.8.1",
         "laravel-vite-plugin": "^1.0.0",
         "vite": "^5.0.0",
         "vite-plugin-electron": "^0.29.0"
@@ -28,5 +31,37 @@
         "vue-qrcode-reader": "^5.6.0",
         "vue-router": "^4.5.1",
         "vuetify": "^3.10.0"
+    },
+    "name": "toko_manufacturering",
+    "version": "1.0.0",
+    "build": {
+        "appId": "com.toko.manufacturering",
+        "productName": "toko_manufacturering",
+        "directories": {
+            "output": "release",
+            "buildResources": "build"
+        },
+        "npmRebuild": false,
+        "files": [
+            "dist/**",
+            "electron/**",
+            "!**/*.map",
+            "!**/*.ts",
+            "!**/*.md",
+            "!**/test/**",
+            "!**/tests/**",
+            "!**/docs/**"
+        ],
+        "asar": true,
+        "win": {
+            "target": "nsis",
+            "icon": "build/icon.ico"
+        },
+        "electronLanguages": ["ja", "en"],
+        "nsis": {
+            "oneClick": false,
+            "perMachine": false,
+            "allowToChangeInstallationDirectory": true
+        }
     }
 }
