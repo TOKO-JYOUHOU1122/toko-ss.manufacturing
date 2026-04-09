@@ -10,8 +10,9 @@
                     <v-col cols="12" class="d-flex justify-end">
                         <v-select v-model="tableFilters.機種" label="区分" :items="divisions" variant="underlined"
                             density="compact" hide-details="auto" clearable max-width="200" class="px-3"></v-select>
-                        <v-select v-model="tableFilters.作業番号" label="作業番号" :items="work_numbers" variant="underlined"
-                            density="compact" hide-details="auto" clearable max-width="200" class="px-3"></v-select>
+                        <v-text-field label="作業番号" v-model="tableFilters.作業番号" type="text" color="primary"
+                            variant="underlined" density="compact" hide-details="auto" clearable max-width="400"
+                            class="px-3" />
                         <v-text-field label="品名" v-model="tableFilters.品名" type="text" color="primary"
                             variant="underlined" density="compact" hide-details="auto" clearable max-width="400"
                             class="px-3" />
@@ -311,10 +312,12 @@ export default {
         async dataImport() {
             let files = null;
             try {
-                files = await openFilePicker({ 'text/csv': ['.csv'] });
+                files = await openFilePicker('ファイルを選択', [{ name: 'CSV Files', extensions: ['csv'] }]);
             } catch (error) {
                 return;
             }
+
+            if (!files || files.length === 0) return;
 
             try {
                 await uploadCsv('pressassist.mst.item.import', files[0], {});
