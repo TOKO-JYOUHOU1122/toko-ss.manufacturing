@@ -6,7 +6,7 @@
         "dev": "vite",
         "start": "electron .",
         "build": "vite build",
-        "electron:dev": "cross-env NODE_ENV=development LARAVEL_URL=http://127.0.0.1:8000 vite",
+        "electron:dev": "cross-env NODE_ENV=development LARAVEL_URL=http://127.0.0.1:8000  electron .",
         "electron:start": "electron .",
         "electron:build": "electron-builder"
     },

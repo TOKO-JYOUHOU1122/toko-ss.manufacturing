@@ -1,6 +1,8 @@
 // electron/main.cjs
 const { app, BrowserWindow, ipcMain, dialog } = require('electron')
 const path = require('node:path')
+const isProduction = app.isPackaged;
+
 require('dotenv').config()
 
 let win = null;
@@ -37,12 +39,12 @@ function createWindow() {
         console.error('Config load error:', e);
     }
 
-    const LARAVEL_URL = process.env.NODE_ENV !== 'production' ? (process.env.APP_URL || 'http://127.0.0.1:8000') : productionUrl;
+    const LARAVEL_URL = !isProduction ? (process.env.APP_URL || 'http://127.0.0.1:8000') : productionUrl;
 
     // ☆ 開発/本番問わずサーバーURLを開く（Inertia対応のため）
     win.loadURL(LARAVEL_URL);
-    
-    if (process.env.NODE_ENV !== 'production') {
+
+    if (!isProduction) {
         win.webContents.openDevTools();
     }
 }
