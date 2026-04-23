@@ -309,15 +309,18 @@ export default {
         },
 
         async dataImport() {
-            let files = null;
+            let file = null;
             try {
-                files = await openFilePicker({ 'text/csv': ['.csv'] });
+                file = await openFilePicker('ファイルを選択',[{ name: 'CSV Files', extensions: ['csv'] }]);
             } catch (error) {
                 return;
             }
 
+            if (!file || file.length === 0) return;
+            const csvFile = fileGenarater(file, 'text/csv');
+
             try {
-                await uploadCsv('pressassist.mst.position.import', files[0], {});
+                await uploadCsv('pressassist.mst.position.import', csvFile, {});
                 alert('インポートが完了しました。');
                 this.fetchPositions();
             } catch (error) {

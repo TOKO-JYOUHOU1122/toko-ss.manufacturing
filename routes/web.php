@@ -50,4 +50,5 @@ Route::prefix('PressAssist')->name('pressassist.')->group(function () {
     Route::get('/master/procedure/fetch', [PressAssistProcedureController::class, 'fetchProcedures'])->name('mst.procedure.fetch');
     Route::post('/master/procedure/regist', [PressAssistProcedureController::class, 'registProcedures'])->name('mst.procedure.regist');
     Route::post('/master/procedure/delete', [PressAssistProcedureController::class, 'deleteProcedures'])->name('mst.procedure.delete');
+    Route::get('/master/procedure/preview', [PressAssistProcedureController::class, 'previewProcedures'])->name('mst.procedure.preview');
 });

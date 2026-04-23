@@ -16,23 +16,25 @@
                     </v-col>
                 </v-row>
                 <v-divider class="my-2"></v-divider>
-                <div v-for="(item, index) in editable_items" :key="index">
+                <div v-for="(item, index) in editable_items" :key="index" :class="{ 'even-row': index % 2 === 1 }">
                     <v-row no-gutters class="py-3" :class="item.削除区分 ? 'bg-lighten-4' : ''">
                         <v-col cols="12" class="d-flex align-end">
-                            <v-icon color="primary" @click="reorder(item.作業順, item.作業順 - 1)"
+                            <v-icon class="scale-btn" color="primary"
+                                @click="reorder(Number(item.作業順), Number(item.作業順) - 1)"
                                 size="40">mdi-arrow-up-thick</v-icon>
-                            <v-icon class="pl-2 pr-5" color="primary" @click="reorder(item.作業順, item.作業順 + 1)"
+                            <v-icon class="scale-btn pl-2 pr-5" color="primary"
+                                @click="reorder(Number(item.作業順), Number(item.作業順) + 1)"
                                 size="40">mdi-arrow-down-thick</v-icon>
                             <HoverTooltip :text="'同時に加工したい手順については\n作業順を同一にしてください。'">
                                 <template #activator="{ props }">
-                                    <v-text-field v-model="item.作業順" label="作業順" variant="underlined"
+                                    <v-text-field v-model="item.作業順" label="作業順" variant="underlined" type="number"
                                         hide-details="auto" max-width="100" class="px-3" v-bind="props"></v-text-field>
                                 </template>
                             </HoverTooltip>
                             <v-select v-model="item.管理番号" label="管理番号" :items="equipment_numbers" variant="underlined"
-                                hide-details="auto" clearable max-width="150" class="px-3"></v-select>
+                                hide-details="auto" max-width="150" class="px-3"></v-select>
                             <v-select v-model="item.段位置" label="段位置" :items="targetPositions(item.管理番号)"
-                                variant="underlined" hide-details="auto" clearable max-width="200"
+                                variant="underlined" hide-details="auto" max-width="200"
                                 class="px-3"></v-select>
                             <v-text-field v-model="item.型図パス" label="型図パス" variant="underlined" hide-details="auto"
                                 class="pl-3 pr-0 text-disabled-input" readonly max-width="800"></v-text-field>
@@ -46,7 +48,7 @@
                                 </template>
                             </HoverTooltip>
                             <v-checkbox v-model="item.反転フラグ" label="加工前に反転" hide-details="auto" class="pl-3 px-5"
-                                density="compact" />
+                                true-value="1" false-value="0" density="compact" />
                             <v-icon v-if="item.削除区分" color="secondary" size="40"
                                 @click="item.削除区分 = false">mdi-delete-restore</v-icon>
                             <v-icon v-else color="red" size="40" @click="item.削除区分 = true">mdi-delete</v-icon>
@@ -59,29 +61,39 @@
                     </v-col>
                 </v-row>
 
-                <ConfirmDialog v-model="dialogDelete" :title="'手順削除'" :message="'表示されている作業番号を削除します'" btn1Text="キャンセル"
-                    btn2Text="削除" @btn1Click="dialogDelete = false;" @btn2Click="deleteProcedures()" />
-                <ConfirmDialog v-model="dialogInsert" :title="'手順追加'" btn1Text="キャンセル" btn2Text="追加"
-                    @btn1Click="dialogInsert = false;" @btn2Click="insertProcedure()">
-                    <span>以下の作業番号を追加します</span>
-                    <v-text-field v-model="insert_work_number" label="作業番号" :items="work_numbers" variant="underlined"
-                        clearable max-width="300" class="px-3" :rules="rulesInsert"></v-text-field>
+                <ConfirmDialog v-model="dialog_confirm.is_show" :title="dialog_confirm.title"
+                    :message="dialog_confirm.message" :btn1Text="dialog_confirm.btn1Text"
+                    :btn2Text="dialog_confirm.btn2Text" @btn1Click="onDialogBtn1Click()"
+                    @btn2Click="onDialogBtn2Click()">
+                    <div
+                        v-if="isSameObject(dialog_confirm, dialog_insert) || isSameObject(dialog_confirm, dialog_copy)">
+                        <span>{{ dialog_confirm.message }}</span>
+                        <v-text-field v-model="insert_work_number" label="作業番号" :items="work_numbers"
+                            variant="underlined" clearable max-width="300" class="px-3"
+                            :rules="rulesInsert"></v-text-field>
+                    </div>
                 </ConfirmDialog>
                 <LoadingModal ref="mloading" />
             </v-container>
         </template>
         <template #footer>
             <v-row dense>
-                <v-col cols="12" class=" d-flex justify-end">
-                    <v-btn color="secondary" class="mx-2" width="150" variant="elevated"
-                        @click="previewProcedures()">プレビュー</v-btn>
-                    <v-btn color="red" class="mx-2" width="150" variant="elevated"
-                        @click="dialogDelete = !dialogDelete">削除</v-btn>
-                    <v-spacer></v-spacer>
-                    <v-btn v-if="work_number" color="primary" class="mx-2" width="150" variant="elevated"
-                        @click="dialogCopy = !dialogCopy">このデータを複製</v-btn>
-                    <v-btn v-else color="primary" class="mx-2" width="150" variant="elevated"
-                        @click="dialogInsert = !dialogInsert">新規作成</v-btn>
+                <v-col cols="12">
+                    <div v-if="work_number" class="d-flex justify-end">
+                        <v-btn color="secondary" class="mx-2" width="150" variant="elevated"
+                            @click="previewProcedures()">プレビュー</v-btn>
+                        <v-btn color="red" class="mx-2" width="150" variant="elevated"
+                            @click="openDialog(dialog_delete)">削除</v-btn>
+                        <v-spacer></v-spacer>
+                        <v-btn v-if="isEdited" color="primary" class="mx-2" width="150" variant="elevated"
+                            @click="openDialog(dialog_save)">保存</v-btn>
+                        <v-btn color="primary" class="mx-2" width="150" variant="elevated"
+                            @click="openDialog(dialog_copy)">このデータを複製</v-btn>
+                    </div>
+                    <div v-else class="d-flex justify-end">
+                        <v-btn color="primary" class="mx-2" width="150" variant="elevated"
+                            @click="openDialog(dialog_insert)">新規作成</v-btn>
+                    </div>
                 </v-col>
             </v-row>
         </template>
@@ -115,13 +127,14 @@ export default {
     name: 'PressAssistMasterProcedure',
     data: () => ({
         editable_items: [],
+        editable_items_Init: [],
         defaultItem: {
             ID: null,
             管理番号: null,
             段位置: null,
             作業順: null,
             型図パス: null,
-            画像位置: '0',
+            画像位置: '1',
             反転フラグ: false,
             削除区分: false,
         },
@@ -130,18 +143,25 @@ export default {
         insert_work_number: null,
 
         loading: false,
-        dialogDelete: false,
-        dialogInsert: false,
-        dialogCopy: false,
-        rulesInsert: [value => (value || !this.work_numbers.includes(this.insert_work_number)) || '既存の作業番号は選択できません']
+        dialog_insert: { is_show: false, title: '作業番号追加', message: '以下の作業番号を追加します', btn1Text: 'キャンセル', btn2Text: '追加' },
+        dialog_copy: { is_show: false, title: 'データ複製', message: '以下の作業番号を作成し、表示中の加工手順を複製します', btn1Text: 'キャンセル', btn2Text: '複製' },
+        dialog_delete: { is_show: false, title: '作業番号削除', message: '表示されている作業番号および加工手順を削除します', btn1Text: 'キャンセル', btn2Text: '削除' },
+        dialog_save: { is_show: false, title: '作業番号保存', message: '表示されている作業番号および加工手順を保存します', btn1Text: 'キャンセル', btn2Text: '保存' },
+        dialog_confirm: { is_show: false, title: '', message: '', btn1Text: '', btn2Text: '' },
     }),
     mounted() {
         this.init()
     },
 
     computed: {
-        formTitle() {
-            return this.editedIndex === -1 ? 'マスタ作成' : 'マスタ編集';
+        isEdited() {
+            return (JSON.stringify(this.editable_items) != JSON.stringify(this.editable_items_Init));
+        },
+        rulesInsert(v) {
+            return [
+                v => !!v || '作業番号は必須です',
+                v => !this.work_numbers.includes(v) || '既に存在する作業番号です',
+            ]
         },
     },
 
@@ -187,6 +207,42 @@ export default {
                 });
         },
 
+        onDialogBtn1Click() {
+            if (this.isSameObject(this.dialog_confirm, this.dialog_insert)) this.insert_work_number = null
+            if (this.isSameObject(this.dialog_confirm, this.dialog_copy)) this.insert_work_number = null
+
+            this.dialog_confirm.is_show = false
+        },
+
+        onDialogBtn2Click() {
+            if (this.isSameObject(this.dialog_confirm, this.dialog_insert)) this.insertWorkNumber()
+            if (this.isSameObject(this.dialog_confirm, this.dialog_copy)) this.copyProcedures()
+            if (this.isSameObject(this.dialog_confirm, this.dialog_delete)) this.deleteProcedures()
+            if (this.isSameObject(this.dialog_confirm, this.dialog_save)) this.saveProcedures(this.work_number)
+
+            this.dialog_confirm.is_show = false
+        },
+
+        openDialog(dialog_confirm) {
+            this.dialog_confirm = dialog_confirm
+            this.dialog_confirm.is_show = true
+        },
+
+        isSameObject(a, b) {
+            const keysA = Object.keys(a);
+            const keysB = Object.keys(b);
+
+            if (keysA.length !== keysB.length) return false;
+
+            return keysA.every(
+                key => b.hasOwnProperty(key) && a[key] === b[key]
+            );
+        },
+
+        insertWorkNumber() {
+            this.work_number = this.insert_work_number;
+        },
+
         insertProcedure() {
             const newItem = Object.assign({}, this.defaultItem);
             newItem.作業番号 = this.work_number;
@@ -197,28 +253,33 @@ export default {
         reorder(fromOrder, toOrder) {
             if (toOrder < 1 || toOrder > this.editable_items.length) return;
 
-            const fromIndex = this.editable_items.findIndex(item => item.作業順 === fromOrder);
-            const toIndex = this.editable_items.findIndex(item => item.作業順 === toOrder);
-
+            const fromIndex = this.editable_items.findIndex(item => Number(item.作業順) === fromOrder);
+            const toIndex = this.editable_items.findIndex(item => Number(item.作業順) === toOrder);
             if (fromIndex === -1 || toIndex === -1) return;
 
-            const tempOrder = this.editable_items[fromIndex].作業順;
-            this.editable_items[fromIndex].作業順 = this.editable_items[toIndex].作業順;
-            this.editable_items[toIndex].作業順 = tempOrder;
+            const temp = this.editable_items[fromIndex];
+            this.editable_items[fromIndex] = this.editable_items[toIndex];
+            this.editable_items[toIndex] = temp;
+            this.editable_items[fromIndex].作業順 = fromOrder;
+            this.editable_items[toIndex].作業順 = toOrder;
         },
 
         /**
          * @description 保存クリック時処理
          */
-        saveProcedures() {
+        saveProcedures(work_number) {
             this.loading = true
             axios.post(route('pressassist.mst.procedure.regist'), {
+                work_number: work_number,
                 editable_items: this.editable_items
             })
                 .then(function (response) {
                     if (response.data.errMessage) {
                         alert('マスタの更新に失敗しました。\n' + response.data.errMessage)
                         console.log(response.data.errMessage)
+                    }
+                    if (this.work_number != work_number) {
+                        this.work_number = work_number
                     }
                 }.bind(this))
                 .catch(function (err) {
@@ -230,15 +291,26 @@ export default {
                 });
         },
 
-        deleteProcedures(procedure) {
+        /**
+         * @description コピークリック時処理
+         */
+        copyProcedures() {
+            if (!this.insert_work_number) return;
+
+            for (const item of this.editable_items) {
+                item.ID = null;
+            }
+
+            this.saveProcedures(this.insert_work_number);
+        },
+
+        deleteProcedures() {
             this.loading = true
             axios.post(route('pressassist.mst.procedure.delete'), {
-                ID: procedure.ID,
+                work_number: this.work_number,
             })
                 .then(function (response) {
-                    if (!response.data.errMessage) {
-                        this.dialogDelete = false
-                    } else {
+                    if (response.data.errMessage) {
                         alert('マスタの削除に失敗しました。\n' + response.data.errMessage)
                         console.log(response.data.errMessage)
                     }
@@ -259,18 +331,31 @@ export default {
             } catch (err) {
             }
         },
+
+        previewProcedures() {
+            if (!this.work_number) return;
+
+            const url = route('pressassist.mst.procedure.preview', { work_number: this.work_number })
+            window.open(url, '_blank');
+        },
     },
 
     watch: {
         editable_items: {
             deep: true,
             handler() {
-                this.editable_items.sort((a, b) => (a.作業順 ?? 0) - (b.作業順 ?? 0));
                 this.editable_items.forEach((item, index) => {
                     if (typeof item.削除区分 === 'undefined') {
                         item.削除区分 = false;
                     }
                 });
+            }
+        },
+        editable_items: {
+            deep: false,
+            handler(newVal) {
+                this.editable_items.sort((a, b) => (a.作業順 ?? 0) - (b.作業順 ?? 0));
+                this.editable_items_Init = JSON.parse(JSON.stringify(newVal));
             }
         },
         work_number: {
@@ -298,4 +383,13 @@ export default {
     color: rgb(var(--v-theme-on-surface));
     opacity: var(--v-disabled-opacity, 0.38);
 }
+
+.scale-btn:active {
+    transform: scale(0.85);
+}
+
+.even-row {
+  background-color: #f5f5f5;
+}
+
 </style>

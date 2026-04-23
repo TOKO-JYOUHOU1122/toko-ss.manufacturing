@@ -48,7 +48,17 @@ export async function openFilePicker($title = 'ファイルを選択', $filters 
     });
 
     if (!result || result.canceled) return null;
-    return result.filePaths[0];
+
+    return result;
+}
+
+export function fileGenarater($file, $type) {
+    const { fileName, buffer } = $file;
+    return new File(
+        [new Uint8Array(buffer)],
+        fileName,
+        { type: $type }
+    );
 }
 
 export async function uploadCsv($route, $file, $param) {

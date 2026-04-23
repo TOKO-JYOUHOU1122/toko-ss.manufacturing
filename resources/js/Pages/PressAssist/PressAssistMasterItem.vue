@@ -10,7 +10,7 @@
                     <v-col cols="12" class="d-flex justify-end">
                         <v-select v-model="tableFilters.機種" label="区分" :items="divisions" variant="underlined"
                             density="compact" hide-details="auto" clearable max-width="200" class="px-3"></v-select>
-                        <v-text-field label="作業番号" v-model="tableFilters.作業番号" type="text" color="primary"
+                        <v-combobox label="作業番号" v-model="tableFilters.作業番号" :items="work_numbers" color="primary"
                             variant="underlined" density="compact" hide-details="auto" clearable max-width="400"
                             class="px-3" />
                         <v-text-field label="品名" v-model="tableFilters.品名" type="text" color="primary"
@@ -80,8 +80,8 @@
                             </v-row>
                             <v-row dense>
                                 <v-col cols="12">
-                                    <v-text-field v-model="editedItem.条件" label="条件" variant="underlined" hide-details
-                                        maxlength=20></v-text-field>
+                                    <v-textarea v-model="editedItem.条件" label="条件" variant="underlined" hide-details
+                                        maxlength=100 rows="1" placeholder="例:[下枠]='25D'    []内は変数の為情報システムに要確認" auto-grow clearable></v-textarea>
                                 </v-col>
                             </v-row>
                         </v-card-text>
@@ -116,7 +116,7 @@
 import UserLayout from '@/Layouts/PressAssist/PressAssistLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import ConfirmDialog from '../../Components/ConfirmDialog.vue'
-import { downloadCsv, openFilePicker, uploadCsv } from '../../util';
+import { downloadCsv, openFilePicker, fileGenarater, uploadCsv } from '../../util';
 
 defineProps({
     items: {
@@ -173,7 +173,7 @@ export default {
             return this.editable_items.filter(item => {
                 return (
                     (!this.tableFilters.機種 || item.機種 == this.tableFilters.機種)
-                    && (!this.tableFilters.作業番号 || item.作業番号 == this.tableFilters.作業番号)
+                    && (!this.tableFilters.作業番号 || item.作業番号.includes(this.tableFilters.作業番号))
                     && (!this.tableFilters.品名 || item.品名.includes(this.tableFilters.品名))
                 )
             });
@@ -252,7 +252,7 @@ export default {
             })
                 .then(function (response) {
                     if (!response.data.errMessage) {
-                        this.close()
+                        this.closeEdit()
                     } else {
                         alert('マスタの更新に失敗しました。\n' + response.data.errMessage)
                         console.log(response.data.errMessage)
@@ -310,17 +310,18 @@ export default {
         },
 
         async dataImport() {
-            let files = null;
+            let file = null;
             try {
-                files = await openFilePicker('ファイルを選択', [{ name: 'CSV Files', extensions: ['csv'] }]);
+                file = await openFilePicker('ファイルを選択', [{ name: 'CSV Files', extensions: ['csv'] }]);
             } catch (error) {
                 return;
             }
 
-            if (!files || files.length === 0) return;
+            if (!file || file.length === 0) return;
+            const csvFile = fileGenarater(file, 'text/csv');
 
             try {
-                await uploadCsv('pressassist.mst.item.import', files[0], {});
+                await uploadCsv('pressassist.mst.item.import', csvFile, {});
                 alert('インポートが完了しました。');
                 this.fetchItems();
             } catch (error) {
@@ -330,7 +331,8 @@ export default {
         },
 
         goProcedures(work_number) {
-            this.$inertia.visit(route('pressassist.mst.procedure', { work_number: work_number }))
+            const url = route('pressassist.mst.procedure', { work_number: work_number })
+            window.open(url, '_blank');
         }
     },
 

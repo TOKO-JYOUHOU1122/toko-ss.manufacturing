@@ -62,6 +62,14 @@ ipcMain.handle('dialog:openFile', async (event, options = {}) => {
     const result = await dialog.showOpenDialog(options);
     if (result.canceled || result.filePaths.length === 0) return null;
 
-    return result;
+    const filePath = result.filePaths[0];
+    const buffer = fs.readFileSync(filePath);
+    const fileName = path.basename(filePath);
+
+    return {
+        fileName,
+        buffer,   // Buffer をそのまま返す
+    };
+
 });
 

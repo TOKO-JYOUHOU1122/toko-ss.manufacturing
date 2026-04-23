@@ -28,29 +28,25 @@ class M_Particular_Instruction extends Model
     ];
 
 
-    public $timestamps = true;
+    public $timestamps = false;
 
     public function scopeWhereId($query, $id) {
-        if($id == null) return $query;
-
         return $query->where('ID', $id);
     }
 
     public function scopeWhereEquipmentNumber($query, $equipment_number) {
-        if($equipment_number == null) return $query;
-
         return $query->where('管理番号', $equipment_number);
     }
 
     public function scopeWhereDivision($query, $division) {
-        if($division == null) return $query;
-
         return $query->where('指示名', 'like', '%' . $division . '%');
     }
 
     public function scopeWherePosition($query, $position_number) {
-        if($position_number == null) return $query;
-
         return $query->where('位置番号', 'like', '%' . $position_number . '%');
+    }
+
+    public function scopeWhereProcedure_id($query, $procedure_id) {
+        return $query->where('プレスアシスト加工手順_ID', $procedure_id);
     }
 }
