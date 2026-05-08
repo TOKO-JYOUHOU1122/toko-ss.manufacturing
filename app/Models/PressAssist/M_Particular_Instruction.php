@@ -27,7 +27,7 @@ class M_Particular_Instruction extends Model
         '表示2',
     ];
 
-
+    public $incrementing = true;
     public $timestamps = false;
 
     public function scopeWhereId($query, $id) {

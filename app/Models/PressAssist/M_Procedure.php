@@ -27,24 +27,18 @@ class M_Procedure extends Model
         '出力_ライトピン番号',
     ];
 
-
-    public $timestamps = true;
+    public $incrementing = true;
+    public $timestamps = false;
 
     public function scopeWhereId($query, $id) {
-        if($id == null) return $query;
-
         return $query->where('ID', $id);
     }
 
     public function scopeWhereWorkNumber($query, $work_number) {
-        if($work_number == null) return $query;
-
         return $query->where('作業番号', $work_number);
     }
 
     public function scopeWhereEquipmentNumber($query, $equipment_number) {
-        if($equipment_number == null) return $query;
-
         return $query->where('管理番号', $equipment_number);
     }
 }

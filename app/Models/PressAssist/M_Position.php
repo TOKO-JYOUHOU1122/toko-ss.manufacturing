@@ -22,6 +22,9 @@ class M_Position extends Model
         '出力_ライトピン番号'
     ];
 
+    public $incrementing = true;
+    public $timestamps = false;
+
     public function scopeWhereId($query, $id) {
         if($id == null) return $query;
 

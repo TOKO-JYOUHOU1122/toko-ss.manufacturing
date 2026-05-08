@@ -50,12 +50,12 @@ class PressAssistProcedureController extends Controller
     {
         $errMessage = '';
         $work_number = $request->work_number;
-        $editedItems = $request->editedItems;
+        $editable_items = $request->editable_items;
 
         try {
             \DB::beginTransaction();
 
-            foreach ($editedItems as $editedItem) {
+            foreach ($editable_items as $editedItem) {
                 if ($editedItem['削除区分']) {
                     if ($editedItem['ID']) M_Procedure::WhereID($editedItem['ID'])->delete();
                     continue;
@@ -76,7 +76,7 @@ class PressAssistProcedureController extends Controller
                 $item->save();
             }
 
-            DB::table('M_プレスアシスト加工手順 as a')
+            DB::connection('sqlsrv_seisanhojyo')->table('M_プレスアシスト加工手順 as a')
                 ->join('M_プレスアシスト位置番号 as b', function ($join) {
                     $join->on('a.管理番号', '=', 'b.管理番号')
                         ->on('a.段位置', '=', 'b.位置番号');
@@ -189,7 +189,6 @@ class PressAssistProcedureController extends Controller
         }
         $image = base64_encode(file_get_contents($path));
         $mime = mime_content_type($path);
-        Log::info("画像取得: {$path}, MIMEタイプ: {$mime}");
 
         return response()->json([
             'image' => "data:{$mime};base64,{$image}"

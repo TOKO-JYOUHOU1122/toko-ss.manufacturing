@@ -11,7 +11,7 @@
                         <v-alert type="info" variant="plain" v-if="!work_number" density="compact">
                             作業番号を選択してください
                         </v-alert>
-                        <v-select v-model="work_number" label="作業番号" :items="work_numbers" variant="underlined"
+                        <v-select v-model="work_number" label="作業番号" :items="editable_work_numbers" variant="underlined"
                             density="compact" hide-details="auto" clearable max-width="200" class="px-3"></v-select>
                     </v-col>
                 </v-row>
@@ -34,8 +34,7 @@
                             <v-select v-model="item.管理番号" label="管理番号" :items="equipment_numbers" variant="underlined"
                                 hide-details="auto" max-width="150" class="px-3"></v-select>
                             <v-select v-model="item.段位置" label="段位置" :items="targetPositions(item.管理番号)"
-                                variant="underlined" hide-details="auto" max-width="200"
-                                class="px-3"></v-select>
+                                variant="underlined" hide-details="auto" max-width="200" class="px-3"></v-select>
                             <v-text-field v-model="item.型図パス" label="型図パス" variant="underlined" hide-details="auto"
                                 class="pl-3 pr-0 text-disabled-input" readonly max-width="800"></v-text-field>
                             <v-icon size="x-large" color="primary" @click="selectImage(item)"
@@ -53,6 +52,9 @@
                                 @click="item.削除区分 = false">mdi-delete-restore</v-icon>
                             <v-icon v-else color="red" size="40" @click="item.削除区分 = true">mdi-delete</v-icon>
                         </v-col>
+                        <v-col cols="12" class="px-3">
+                            <Particular></Particular>
+                        </v-col>
                     </v-row>
                 </div>
                 <v-row v-if="work_number" no-gutters class="pt-3">
@@ -68,7 +70,7 @@
                     <div
                         v-if="isSameObject(dialog_confirm, dialog_insert) || isSameObject(dialog_confirm, dialog_copy)">
                         <span>{{ dialog_confirm.message }}</span>
-                        <v-text-field v-model="insert_work_number" label="作業番号" :items="work_numbers"
+                        <v-text-field v-model="insert_work_number" label="作業番号" :items="editable_work_numbers"
                             variant="underlined" clearable max-width="300" class="px-3"
                             :rules="rulesInsert"></v-text-field>
                     </div>
@@ -106,6 +108,7 @@ import { Head } from '@inertiajs/vue3';
 import ConfirmDialog from '../../Components/ConfirmDialog.vue';
 import LoadingModal from '../../Components/ModalLoadingComponent.vue';
 import HoverTooltip from '@/components/HoverTooltip.vue';
+import Particular from '@/components/PressAssist/PressAssistMasterParticular.vue';
 import { openFilePicker } from '../../util';
 
 defineProps({
@@ -126,6 +129,7 @@ defineProps({
 export default {
     name: 'PressAssistMasterProcedure',
     data: () => ({
+        editable_work_numbers: [],
         editable_items: [],
         editable_items_Init: [],
         defaultItem: {
@@ -160,13 +164,14 @@ export default {
         rulesInsert(v) {
             return [
                 v => !!v || '作業番号は必須です',
-                v => !this.work_numbers.includes(v) || '既に存在する作業番号です',
+                v => !this.editable_work_numbers.includes(v) || '既に存在する作業番号です',
             ]
         },
     },
 
     methods: {
         init: function () {
+            this.editable_work_numbers = this.work_numbers;
             this.editable_items = this.procedures;
             if (this.editable_items.length > 0) this.work_number = this.editable_items[0].作業番号;
 
@@ -277,7 +282,13 @@ export default {
                     if (response.data.errMessage) {
                         alert('マスタの更新に失敗しました。\n' + response.data.errMessage)
                         console.log(response.data.errMessage)
+                    } else {
+                        this.fetchProcedures()
+                        if (!this.editable_work_numbers.includes(work_number)) {
+                            this.editable_work_numbers.push(work_number)
+                        }
                     }
+
                     if (this.work_number != work_number) {
                         this.work_number = work_number
                     }
@@ -287,7 +298,6 @@ export default {
                 }.bind(this))
                 .finally(() => {
                     this.loading = false
-                    this.fetchProcedures()
                 });
         },
 
@@ -313,6 +323,9 @@ export default {
                     if (response.data.errMessage) {
                         alert('マスタの削除に失敗しました。\n' + response.data.errMessage)
                         console.log(response.data.errMessage)
+                    } else {
+                        this.editable_work_numbers = this.editable_work_numbers.filter(num => num !== this.work_number)
+                        this.work_number = null
                     }
                 }.bind(this))
                 .catch(function (err) {
@@ -342,18 +355,13 @@ export default {
 
     watch: {
         editable_items: {
-            deep: true,
-            handler() {
+            deep: false,
+            handler(newVal) {
                 this.editable_items.forEach((item, index) => {
                     if (typeof item.削除区分 === 'undefined') {
                         item.削除区分 = false;
                     }
                 });
-            }
-        },
-        editable_items: {
-            deep: false,
-            handler(newVal) {
                 this.editable_items.sort((a, b) => (a.作業順 ?? 0) - (b.作業順 ?? 0));
                 this.editable_items_Init = JSON.parse(JSON.stringify(newVal));
             }
@@ -389,7 +397,6 @@ export default {
 }
 
 .even-row {
-  background-color: #f5f5f5;
+    background-color: #f5f5f5;
 }
-
 </style>

@@ -19,6 +19,7 @@ class M_Item extends Model
         '条件'
     ];
 
+    public $incrementing = true;
     public $timestamps = false;
 
     public function scopeWhereId($query, $id) {

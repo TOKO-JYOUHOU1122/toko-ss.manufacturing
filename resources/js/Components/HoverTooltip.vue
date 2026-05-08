@@ -1,16 +1,3 @@
-<!-- HoverTooltip.vue（最小・確実版） -->
-<script setup>
-const props = defineProps({
-  text: { type: String, default: '' },
-  location: { type: String, default: 'top' },
-  openDelay: { type: [Number, String], default: 150 },
-  closeDelay: { type: [Number, String], default: 80 },
-  maxWidth: { type: [Number, String], default: 320 },
-  openOnClick: { type: Boolean, default: false },
-  disabled: { type: Boolean, default: false },
-})
-</script>
-
 <template>
   <v-tooltip
     :location="location"
@@ -31,3 +18,15 @@ const props = defineProps({
 
   </v-tooltip>
 </template>
+
+<script setup>
+const props = defineProps({
+  text: { type: String, default: '' },
+  location: { type: String, default: 'top' },
+  openDelay: { type: [Number, String], default: 150 },
+  closeDelay: { type: [Number, String], default: 80 },
+  maxWidth: { type: [Number, String], default: 320 },
+  openOnClick: { type: Boolean, default: false },
+  disabled: { type: Boolean, default: false },
+})
+</script>
