@@ -52,9 +52,9 @@
                                 @click="item.削除区分 = false">mdi-delete-restore</v-icon>
                             <v-icon v-else color="red" size="40" @click="item.削除区分 = true">mdi-delete</v-icon>
                         </v-col>
-                        <v-col cols="12" class="px-3">
+                        <!--v-col cols="12" class="px-3">
                             <Particular></Particular>
-                        </v-col>
+                        </v-col-->
                     </v-row>
                 </div>
                 <v-row v-if="work_number" no-gutters class="pt-3">
