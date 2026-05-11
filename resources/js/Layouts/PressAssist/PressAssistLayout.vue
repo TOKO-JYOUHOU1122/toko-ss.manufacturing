@@ -49,7 +49,7 @@ export default {
             { title: '品目マスタ', icon: 'mdi-package-variant', url: 'pressassist.mst.item' },
             { title: '加工手順マスタ', icon: 'mdi-format-list-numbered', url: 'pressassist.mst.procedure' },
             { title: '位置番号マスタ', icon: 'mdi-clipboard-check-multiple-outline', url: 'pressassist.mst.position' },
-            //{ title: 'シリンダ・治具マスタ', icon: 'mdi-history', url: 'pressassist.mst.cylinder' },
+            { title: '特殊指示情報マスタ', icon: 'mdi-star-four-points-circle-outline', url: 'pressassist.mst.particular' },
         ],
     }),
 }

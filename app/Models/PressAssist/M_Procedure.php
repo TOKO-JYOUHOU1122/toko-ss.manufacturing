@@ -41,4 +41,16 @@ class M_Procedure extends Model
     public function scopeWhereEquipmentNumber($query, $equipment_number) {
         return $query->where('管理番号', $equipment_number);
     }
+
+    public function scopeOrderByWorkNumberNumeric($query, $direction = 'asc')
+    {
+        return $query->orderByRaw("
+            CASE
+                WHEN TRY_CAST(作業番号 AS INT) IS NOT NULL THEN 0
+                ELSE 1
+            END,
+            TRY_CAST(作業番号 AS INT) {$direction},
+            作業番号 {$direction}
+        ");
+    }
 }

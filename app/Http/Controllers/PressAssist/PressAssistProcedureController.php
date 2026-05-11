@@ -16,8 +16,8 @@ class PressAssistProcedureController extends Controller
     public function procedure(Request $request)
     {
         $work_numbers = M_Procedure::select('作業番号')
-            ->distinct()
-            ->orderBy('作業番号', 'asc')
+            ->groupBy('作業番号')
+            ->OrderByWorkNumberNumeric()
             ->pluck('作業番号')
             ->toArray();
         $positions = M_Position::select('管理番号', '位置番号 as 段位置')
@@ -132,8 +132,8 @@ class PressAssistProcedureController extends Controller
 
         foreach ($procedures as $procedure) {
             $lastIndex = count($mergedProcedures) - 1;
+            //同作業順の場合画像位置はORで結合し、その他は同一のものがなければ追加
             if ($lastIndex >= 0 && $mergedProcedures[$lastIndex]['作業順'] === $procedure['作業順']) {
-                //画像位置はORで結合、その他は同一のものがなければ追加
                 $imageBit = $procedure['画像位置'];
                 $existingImageBit = $mergedProcedures[$lastIndex]['画像位置'];
                 $maxLen = max(strlen($existingImageBit), strlen($imageBit));

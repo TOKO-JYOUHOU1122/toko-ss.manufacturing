@@ -51,10 +51,13 @@
                             <v-icon v-if="item.削除区分" color="secondary" size="40"
                                 @click="item.削除区分 = false">mdi-delete-restore</v-icon>
                             <v-icon v-else color="red" size="40" @click="item.削除区分 = true">mdi-delete</v-icon>
+                            <HoverTooltip
+                                :text="'エアシリンダや治具照合等の\n特殊指示を登録します'" location="left">
+                                <template #activator="{ props }">
+                                    <v-icon size="40" color="green" class="mr-3" @click="openParticular(item.作業順)" v-bind="props">mdi-toy-brick-plus</v-icon>
+                                </template>
+                            </HoverTooltip>
                         </v-col>
-                        <!--v-col cols="12" class="px-3">
-                            <Particular></Particular>
-                        </v-col-->
                     </v-row>
                 </div>
                 <v-row v-if="work_number" no-gutters class="pt-3">
@@ -63,6 +66,7 @@
                     </v-col>
                 </v-row>
 
+                <ParticularLink ref="particular"></ParticularLink>
                 <ConfirmDialog v-model="dialog_confirm.is_show" :title="dialog_confirm.title"
                     :message="dialog_confirm.message" :btn1Text="dialog_confirm.btn1Text"
                     :btn2Text="dialog_confirm.btn2Text" @btn1Click="onDialogBtn1Click()"
@@ -82,7 +86,7 @@
             <v-row dense>
                 <v-col cols="12">
                     <div v-if="work_number" class="d-flex justify-end">
-                        <v-btn color="secondary" class="mx-2" width="150" variant="elevated"
+                        <v-btn v-if="!isEdited" color="secondary" class="mx-2" width="150" variant="elevated"
                             @click="previewProcedures()">プレビュー</v-btn>
                         <v-btn color="red" class="mx-2" width="150" variant="elevated"
                             @click="openDialog(dialog_delete)">削除</v-btn>
@@ -108,7 +112,7 @@ import { Head } from '@inertiajs/vue3';
 import ConfirmDialog from '../../Components/ConfirmDialog.vue';
 import LoadingModal from '../../Components/ModalLoadingComponent.vue';
 import HoverTooltip from '@/components/HoverTooltip.vue';
-import Particular from '@/components/PressAssist/PressAssistMasterParticular.vue';
+import ParticularLink from '@/components/PressAssist/PressAssistMasterParticularLink.vue';
 import { openFilePicker } from '../../util';
 
 defineProps({
@@ -350,6 +354,10 @@ export default {
 
             const url = route('pressassist.mst.procedure.preview', { work_number: this.work_number })
             window.open(url, '_blank');
+        },
+
+        openParticular(work_order) {
+            this.$refs.particular?.open?.(this.work_number, work_order);
         },
     },
 

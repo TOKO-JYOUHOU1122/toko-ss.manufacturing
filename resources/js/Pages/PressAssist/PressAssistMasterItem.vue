@@ -132,7 +132,7 @@ export default {
     data: () => ({
         headers: [
             { title: 'ID', key: 'ID', headerProps: { class: 'd-none' }, cellProps: { class: 'd-none' } },
-            { title: '区分', key: '機種', width: '100px' },
+            { title: '区分', key: '機種', width: '160px' },
             { title: '作業番号', key: '作業番号', width: '120px' },
             { title: '品名', key: '品名' },
             { title: '表示品名', key: '表示品名', headerProps: { class: 'd-none' }, cellProps: { class: 'd-none' } },

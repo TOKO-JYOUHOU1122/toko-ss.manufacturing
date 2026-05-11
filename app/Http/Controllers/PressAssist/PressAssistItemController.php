@@ -33,7 +33,7 @@ class PressAssistItemController extends Controller
         $items = M_Item::WhereDivision($request->division)
             ->WhereItemName($request->item_name)
             ->WhereWorkNumber($request->work_number)
-            ->orderBy('作業番号', 'asc')
+            ->OrderByWorkNumberNumeric()
             ->orderBy('品名', 'asc')
             ->get();
 
