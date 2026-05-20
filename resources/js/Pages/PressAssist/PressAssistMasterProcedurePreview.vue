@@ -195,7 +195,6 @@ export default {
             if (this.current_index + value < 0 || this.current_index + value >= this.procedures.length) return;
             this.current_index += value;
             this.current_procedure = this.procedures[this.current_index];
-            console.log(this.positon_column)
         },
 
         onImageLoad() {

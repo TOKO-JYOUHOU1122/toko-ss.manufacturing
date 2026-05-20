@@ -25,6 +25,8 @@ class M_Particular_Instruction extends Model
         '金型番号',
         '表示1',
         '表示2',
+        '作業番号',
+        '作業順',
     ];
 
     public $incrementing = true;

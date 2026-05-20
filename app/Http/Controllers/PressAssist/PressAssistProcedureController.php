@@ -4,6 +4,7 @@ namespace App\Http\Controllers\PressAssist;
 
 use App\Http\Controllers\Controller;
 use App\Models\PressAssist\M_Position;
+use App\Models\PressAssist\M_Particular_Info;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\PressAssist\M_Procedure;
@@ -39,8 +40,16 @@ class PressAssistProcedureController extends Controller
 
     public function fetchProcedures(Request $request)
     {
-        $procedures = M_Procedure::WhereWorkNumber($request->work_number)
-            ->orderBy('作業順', 'asc')
+        $procedures = M_Procedure::from('M_プレスアシスト加工手順 as a')
+            ->select('a.*')
+            ->selectSub(function ($query) {
+                $query->from('M_プレスアシスト特殊指示 as b')
+                    ->selectRaw('COUNT(*)')
+                    ->whereColumn('a.作業番号', 'b.作業番号')
+                    ->whereColumn('a.作業順', 'b.作業順');
+            }, '特殊指示件数')
+            ->where('a.作業番号', $request->work_number)
+            ->orderBy('a.ID', 'asc')
             ->get();
 
         return $procedures;
@@ -132,20 +141,8 @@ class PressAssistProcedureController extends Controller
 
         foreach ($procedures as $procedure) {
             $lastIndex = count($mergedProcedures) - 1;
-            //同作業順の場合画像位置はORで結合し、その他は同一のものがなければ追加
+            //同作業順の場合同一のものがなければ追加
             if ($lastIndex >= 0 && $mergedProcedures[$lastIndex]['作業順'] === $procedure['作業順']) {
-                $imageBit = $procedure['画像位置'];
-                $existingImageBit = $mergedProcedures[$lastIndex]['画像位置'];
-                $maxLen = max(strlen($existingImageBit), strlen($imageBit));
-                $merged = '';
-
-                for ($i = 0; $i < $maxLen; $i++) {
-                    $bit1 = $existingImageBit[$i] ?? '0';
-                    $bit2 = $imageBit[$i] ?? '0';
-                    $merged .= ($bit1 === '1' || $bit2 === '1') ? '1' : '0';
-                }
-                $mergedProcedures[$lastIndex]['画像位置'] = $merged;
-
                 foreach ($arrayFileds as $field) {
                     if (!is_array($mergedProcedures[$lastIndex][$field])) {
                         $mergedProcedures[$lastIndex][$field] = [$mergedProcedures[$lastIndex][$field]];
@@ -173,7 +170,7 @@ class PressAssistProcedureController extends Controller
         );
     }
 
-    private function getParticularInstructions($procedure_id)
+    private function getParticularInstructions(int $procedure_id)
     {
         $particular_instructions = M_Particular_Instruction::WhereProcedure_id($procedure_id)
             ->orderBy('ID', 'asc')
@@ -182,7 +179,114 @@ class PressAssistProcedureController extends Controller
         return $particular_instructions;
     }
 
-    public function getImage($path)
+    public function fetchParticularInstructions(Request $request)
+    {
+        $work_number = $request->work_number;
+        $work_order = $request->work_order;
+
+        $instructions = M_Particular_Instruction::where('作業番号', $work_number)
+            ->where('作業順', $work_order)
+            ->orderBy('ID', 'asc')
+            ->get();
+
+        return $instructions;
+    }
+
+    public function registParticularInstruction(Request $request)
+    {
+        $errMessage = '';
+        $editedItems = $request->editedItems;
+
+        try {
+            \DB::beginTransaction();
+
+            foreach ($editedItems as $editedItem) {
+                $instruction = $editedItem['ID'] ? M_Particular_Instruction::WhereId($editedItem['ID'])->first() : null;
+
+                if (isset($editedItem['削除区分']) && $editedItem['削除区分'] === true) {
+                    if ($instruction) $instruction->delete();
+
+                    continue;
+                }
+
+                if (!$instruction) {
+                    $instruction = new M_Particular_Instruction();
+                }
+
+                $particularInfo = M_Particular_Info::where('管理番号', $editedItem['管理番号'])
+                    ->where('指示区分', $editedItem['指示名'])
+                    ->where('登録コード', $editedItem['表示1'])
+                    ->first();
+                if (!$particularInfo) {
+                    throw new \Exception('対応する特殊情報が見つかりません。管理番号: ' . $editedItem['管理番号'] . ' 登録コード: ' . $editedItem['表示1']);
+                }
+
+                $instruction->fill([
+                    '作業番号' => $request->work_number,
+                    '作業順' => $request->work_order,
+                    '管理番号' => $editedItem['管理番号'],
+                    '置換フラグ' => $editedItem['置換フラグ'],
+                    '条件' => $editedItem['条件'],
+                    '指示名' => $particularInfo['指示区分'],
+                    '表示1' => $particularInfo['登録コード'],
+                    '表示2' => $particularInfo['表示文字列'],
+                    '段位置' => $particularInfo['段位置'],
+                    'モニタ番号' => $particularInfo['モニタ番号'],
+                    '入力ピン番号' => $particularInfo['入力ピン番号'],
+                    '出力ピン番号' => $particularInfo['出力ピン番号'],
+                ]);
+
+
+                $instruction->save();
+            }
+
+            \DB::commit();
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            Log::error($e);
+            $errMessage = 'エラーが発生しました。' . $e->getMessage();
+        }
+
+        return ['errMessage' => $errMessage];
+    }
+
+    public function deleteParticularInstruction(Request $request)
+    {
+        $errMessage = '';
+
+        try {
+            M_Particular_Instruction::WhereId($request->ID)->delete();
+        } catch (\Exception $e) {
+            Log::error($e);
+            $errMessage = 'エラーが発生しました。' . $e->getMessage();
+        }
+
+        return ['errMessage' => $errMessage];
+    }
+
+    public function fetchParticularOptions(Request $request)
+    {
+        $equipment_numbers = M_Position::select('管理番号')
+            ->groupBy('管理番号')
+            ->orderBy('管理番号')
+            ->pluck('管理番号')
+            ->toArray();
+
+        $unique_info = M_Particular_Info::select('管理番号', '指示区分', '登録コード')
+            ->groupBy('管理番号', '指示区分', '登録コード')
+            ->orderBy('管理番号')
+            ->orderBy('指示区分')
+            ->orderBy('登録コード')
+            ->get()
+            ->toArray();
+
+        return [
+            'equipment_numbers' => $equipment_numbers,
+            'unique_info' => $unique_info,
+        ];
+    }
+
+    public function getImage(string $path)
     {
         if (!file_exists($path)) {
             return response()->json(['image' => null]);
