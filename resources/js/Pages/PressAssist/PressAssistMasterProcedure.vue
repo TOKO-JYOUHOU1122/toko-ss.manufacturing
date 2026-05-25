@@ -43,7 +43,7 @@
                             <HoverTooltip
                                 :text="'エアシリンダや治具照合等の\n特殊指示を登録します'" location="left">
                                 <template #activator="{ props }">
-                                    <v-badge :content="item.特殊指示件数 || 0" :color="item.特殊指示件数 && item.特殊指示件数 > 0 ? 'red' : 'grey'" offset-x="20" offset-y="5">
+                                    <v-badge :content="item.特殊指示ID ? item.特殊指示ID.length : 0" :color="item.特殊指示ID && item.特殊指示ID.length > 0 ? 'red' : 'grey'" offset-x="20" offset-y="5">
                                         <v-icon size="40" color="green" class="mr-3" @click="openParticular(item.作業順)" v-bind="props">mdi-toy-brick-plus</v-icon>
                                     </v-badge>
                                 </template>

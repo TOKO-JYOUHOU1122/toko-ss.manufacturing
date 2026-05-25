@@ -44,13 +44,18 @@ class PressAssistProcedureController extends Controller
             ->select('a.*')
             ->selectSub(function ($query) {
                 $query->from('M_プレスアシスト特殊指示 as b')
-                    ->selectRaw('COUNT(*)')
+                    ->selectRaw("STRING_AGG(CAST(b.ID as varchar(500)), ',')")
                     ->whereColumn('a.作業番号', 'b.作業番号')
                     ->whereColumn('a.作業順', 'b.作業順');
-            }, '特殊指示件数')
+            }, '特殊指示ID')
             ->where('a.作業番号', $request->work_number)
             ->orderBy('a.ID', 'asc')
             ->get();
+
+        $procedures->transform(function ($item) {
+            $item->特殊指示ID = $item->特殊指示ID ? array_map('intval', explode(',', $item->特殊指示ID)) : [];
+            return $item;
+        });
 
         return $procedures;
     }
@@ -235,7 +240,6 @@ class PressAssistProcedureController extends Controller
                     '入力ピン番号' => $particularInfo['入力ピン番号'],
                     '出力ピン番号' => $particularInfo['出力ピン番号'],
                 ]);
-
 
                 $instruction->save();
             }
