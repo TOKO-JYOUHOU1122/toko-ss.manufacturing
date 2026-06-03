@@ -38,6 +38,22 @@ function createWindow() {
         },
     })
 
+    // window.open で開く新規ウインドウのサイズ等を一括設定
+    win.webContents.setWindowOpenHandler(({ url }) => {
+        return {
+            action: 'allow',
+            overrideBrowserWindowOptions: {
+                width: 1400,
+                height: 900,
+                webPreferences: {
+                    nodeIntegration: false,
+                    contextIsolation: true,
+                    preload: path.join(__dirname, 'preload.cjs'),
+                },
+            },
+        }
+    })
+
     const url = getAppUrl()
     win.loadURL(url).catch(err => {
         dialog.showErrorBox('起動エラー', 'サーバーに接続できません')

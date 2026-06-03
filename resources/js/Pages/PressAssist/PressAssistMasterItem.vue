@@ -21,23 +21,35 @@
                 <v-divider class="my-2"></v-divider>
                 <v-row dense class="pt-1 px-2">
                     <v-col cols="12">
-                        <v-data-table :headers="headers" :items="filteredItems" item-value="ID" items-per-page-text="表示行数"
-                            items-per-page="20" :loading="loading" density="comfortable">
+                        <v-data-table :headers="headers" :items="filteredItems" item-value="ID"
+                            items-per-page-text="表示行数" items-per-page="20" :loading="loading" density="comfortable">
                             <template #item.作業番号="{ item }">
-                                <v-hover v-slot="{ isHovering, props }">
-                                    <div v-bind="props" class="b-cell" :class="{ 'b-cell--hover': isHovering }">
-                                        <!-- ホバー時にツールチップ -->
-                                        <v-tooltip :text="'作業番号 : ' + item.作業番号 + 'のマスタへ'" location="top" activator="parent" open-delay="200" />
-                                        <span>{{ item.作業番号 }}</span>
-
-                                        <v-btn size="x-small" variant="text" color="primary"
-                                            class="ml-2" @click.stop="goProcedures(item.作業番号)">
-                                            <v-icon size="20">mdi-open-in-new</v-icon>
-                                        </v-btn>
-                                    </div>
-                                </v-hover>
+                                <div class="d-flex align-center">
+                                    <span>{{ item.作業番号 }}</span>
+                                    <v-hover v-slot="{ isHovering, props }">
+                                        <div v-bind="props" class="b-cell" :class="{ 'b-cell--hover': isHovering }">
+                                            <!-- ホバー時にツールチップ -->
+                                            <v-tooltip :text="'作業番号 : ' + item.作業番号 + 'のマスタへ'" location="top"
+                                                activator="parent" open-delay="200" />
+                                            <v-btn size="x-small" variant="text" color="primary" class="ml-2"
+                                                @click.stop="goProcedures(item.作業番号)">
+                                                <v-icon size="20">mdi-format-list-numbered</v-icon>
+                                            </v-btn>
+                                        </div>
+                                    </v-hover>
+                                    <v-hover v-slot="{ isHovering, props }">
+                                        <div v-bind="props" class="b-cell" :class="{ 'b-cell--hover': isHovering }">
+                                            <!-- ホバー時にツールチップ -->
+                                            <v-tooltip :text="'作業番号 : ' + item.作業番号 + 'のプレビューへ'" location="top"
+                                                activator="parent" open-delay="200" />
+                                            <v-btn size="x-small" variant="text" color="primary" class="ml-0"
+                                                @click.stop="goPreview(item.作業番号)">
+                                                <v-icon size="20">mdi-image-outline</v-icon>
+                                            </v-btn>
+                                        </div>
+                                    </v-hover>
+                                </div>
                             </template>
-
                             <template v-slot:[`item.actions`]="{ item }">
                                 <v-icon size="large" color="primary" class="mr-3"
                                     @click="onEdit(item)">mdi-pencil</v-icon>
@@ -81,7 +93,8 @@
                             <v-row dense>
                                 <v-col cols="12">
                                     <v-textarea v-model="editedItem.条件" label="条件" variant="underlined" hide-details
-                                        maxlength=100 rows="1" placeholder="例:[下枠]='25D'    []内は変数の為情報システムに要確認" auto-grow clearable></v-textarea>
+                                        maxlength=100 rows="1" placeholder="例:[下枠]='25D'    []内は変数の為情報システムに要確認"
+                                        auto-grow clearable></v-textarea>
                                 </v-col>
                             </v-row>
                         </v-card-text>
@@ -332,6 +345,10 @@ export default {
 
         goProcedures(work_number) {
             const url = route('pressassist.mst.procedure', { work_number: work_number })
+            window.open(url, '_blank');
+        },
+        goPreview(work_number) {
+            const url = route('pressassist.mst.procedure.preview', { work_number: work_number })
             window.open(url, '_blank');
         }
     },
