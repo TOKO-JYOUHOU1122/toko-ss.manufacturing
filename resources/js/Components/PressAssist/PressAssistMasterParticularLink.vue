@@ -13,7 +13,7 @@
                                 variant="underlined" density="compact" hide-details></v-select></v-col>
                         <v-col cols="3"><v-select v-model="item.指示名" :items="getNamesForEquipment(item.管理番号)"
                                 label="指示区分" variant="underlined" density="compact" hide-details></v-select></v-col>
-                        <v-col cols="3"><v-select v-model="item.表示1" :items="getCodesForEquipment(item.管理番号, item.指示名)"
+                        <v-col cols="3"><v-select v-model="item.登録コード" :items="getCodesForEquipment(item.管理番号, item.指示名)"
                                 label="登録コード" variant="underlined" density="compact" hide-details></v-select></v-col>
                         <v-col cols="2"><v-checkbox v-if="item.指示名 === 'シリンダ'" v-model="item.置換フラグ" label="置換"
                                 hide-details density="compact" true-value="1" false-value="0"></v-checkbox></v-col>

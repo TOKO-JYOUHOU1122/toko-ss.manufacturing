@@ -19,7 +19,8 @@ class M_Particular_Info extends Model
         'モニタ番号',
         '入力ピン番号',
         '出力ピン番号',
-        '表示文字列',
+        '表示1',
+        '表示2',
     ];
 
     public $incrementing = true;
@@ -56,7 +57,8 @@ class M_Particular_Info extends Model
             '入力ピン番号',
             '出力ピン番号',
             '置換フラグ',
-            '表示文字列',
+            '表示1',
+            '表示2',
         ];
     }
 }

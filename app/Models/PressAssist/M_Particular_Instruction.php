@@ -14,6 +14,7 @@ class M_Particular_Instruction extends Model
     protected $fillable = [
         '管理番号',
         '指示名',
+        '登録コード',
         '段位置',
         'モニタ番号',
         '段位置',
@@ -44,11 +45,23 @@ class M_Particular_Instruction extends Model
         return $query->where('指示名', 'like', '%' . $division . '%');
     }
 
+    public function scopeWhereCode($query, $code) {
+        return $query->where('登録コード', $code);
+    }
+
     public function scopeWherePosition($query, $position_number) {
         return $query->where('位置番号', 'like', '%' . $position_number . '%');
     }
 
     public function scopeWhereProcedure_id($query, $procedure_id) {
         return $query->where('プレスアシスト加工手順_ID', $procedure_id);
+    }
+
+    public function scopeWhereWorkNumber($query, $work_number) {
+        return $query->where('作業番号', $work_number);
+    }
+
+    public function scopeWhereWorkOrder($query, $work_order) {
+        return $query->where('作業順', $work_order);
     }
 }

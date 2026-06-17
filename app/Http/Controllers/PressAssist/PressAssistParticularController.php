@@ -69,7 +69,8 @@ class PressAssistParticularController extends Controller
                 '出力ピン番号' => $editedItem['出力ピン番号'],
                 '条件' => $editedItem['条件'],
                 '置換フラグ' => $editedItem['置換フラグ'],
-                '表示文字列' => $editedItem['表示文字列'],
+                '表示1' => $editedItem['表示1'],
+                '表示2' => $editedItem['表示2'],
             ]);
             $particular->save();
 

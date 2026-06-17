@@ -85,10 +85,14 @@
                                         true-value="1" false-value="0" density="compact" />
                                 </v-col>
                             </v-row>
-                            <v-row v-else dense>
+                            <v-row>
                                 <v-col cols="6">
-                                    <v-text-field label="表示文字列" v-model="editedItem.表示文字列" color="primary"
-                                        variant="underlined" hide-details />
+                                    <v-text-field :label="editedItem && editedItem.指示区分 == '治具照合' ? '治具No' : '表示1'"
+                                        v-model="editedItem.表示1" color="primary" variant="underlined" hide-details />
+                                </v-col>
+                                <v-col cols="6">
+                                    <v-text-field :label="editedItem && editedItem.指示区分 == '治具照合' ? '照合値' : '表示2'"
+                                        v-model="editedItem.表示2" color="primary" variant="underlined" hide-details />
                                 </v-col>
                             </v-row>
                         </v-card-text>
@@ -144,9 +148,8 @@ export default {
             { title: 'ID', key: 'ID', headerProps: { class: 'd-none' }, cellProps: { class: 'd-none' } },
             { title: '管理番号', key: '管理番号', width: '60px' },
             { title: '指示区分', key: '指示区分', width: '80px' },
-            { title: '登録コード', key: '登録コード', width: '80px'},
+            { title: '登録コード', key: '登録コード', width: '80px' },
             { title: '段位置', key: '段位置', width: '60px' },
-            { title: '照合値', key: '表示文字列', width: '80px'},
             { title: '条件', key: '条件', width: '200px', align: 'center' },
             { title: '入力ピン', key: '入力ピン番号', width: '60px', align: 'center' },
             { title: '出力ピン', key: '出力ピン番号', width: '60px', align: 'center' },
@@ -166,7 +169,8 @@ export default {
             入力ピン番号: null,
             出力ピン番号: null,
             置換フラグ: false,
-            表示文字列: '',
+            表示1: '',
+            表示2: '',
         },
         equipment_numbers: [],
         categories: [],

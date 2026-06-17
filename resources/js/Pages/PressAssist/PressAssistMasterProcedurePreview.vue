@@ -11,16 +11,17 @@
                         <v-row dense>
                             <v-col cols="12" class="d-flex justify-start">
                                 <h3>管理番号: <span class=" text-red">{{ current_procedure.管理番号 }}</span></h3>
-                            </v-col>
-                        </v-row>
-                        <v-row dense>
-                            <v-col cols="12" class="d-flex justify-start">
-                                <h3>段位置:
+                                <h3 class="pl-5">段位置:
                                     <span v-for="(value, index) in current_procedure.段位置" :key="index" class="text-red">
                                         {{ value }}
                                     </span>
                                 </h3>
                                 <h3 class="pl-5">モニタ番号: <span class="text-red">{{ current_procedure.モニタ番号 }}</span></h3>
+                            </v-col>
+                        </v-row>
+                        <v-row dense>
+                            <v-col cols="12" class="d-flex justify-start">
+                                <h3><span class="text-red">{{ current_particular_codes }}</span></h3>
                             </v-col>
                         </v-row>
                     </v-col>
@@ -142,7 +143,7 @@ defineProps({
         type: Array,
     },
     particular_instructions: {
-        type: Object,
+        type: Array,
     },
 
 });
@@ -169,6 +170,11 @@ export default {
 
             const match = this.current_procedure.段位置[0].match(/\d/);
             return match ? match[0] : null;
+        },
+        current_particular_codes() {
+            const list = this.particular_instructions && this.particular_instructions[this.current_index];
+            if (!Array.isArray(list) || list.length === 0) return '';
+            return `特殊指示コード: ${list.map(item => item?.登録コード ?? '').filter(v => v !== '').join(',')}`;
         }
     },
 
@@ -199,7 +205,6 @@ export default {
 
         onImageLoad() {
             this.$nextTick(() => {
-                // 少し待つとさらに安定
                 setTimeout(() => {
                     this.updateOverlay()
                 }, 0)

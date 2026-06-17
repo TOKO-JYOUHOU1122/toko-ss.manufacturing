@@ -28,7 +28,8 @@ class ParticularExport implements FromCollection, WithMapping, WithHeadings, Wit
             $item->入力ピン番号,
             $item->出力ピン番号,
             $item->置換フラグ,
-            $item->表示文字列,
+            $item->表示1,
+            $item->表示2,
         ];
     }
 

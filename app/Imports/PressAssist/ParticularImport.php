@@ -23,7 +23,8 @@ class ParticularImport implements ToModel, WithHeadingRow, WithValidation
             '入力ピン番号' => $row['入力ピン番号'] ?? null,
             '出力ピン番号' => $row['出力ピン番号'] ?? null,
             '置換フラグ' => $row['置換フラグ'] ?? null,
-            '表示文字列' => $row['表示文字列'] ?? null,
+            '表示1' => $row['表示1'] ?? null,
+            '表示2' => $row['表示2'] ?? null,
         ]);
 
         return $item;

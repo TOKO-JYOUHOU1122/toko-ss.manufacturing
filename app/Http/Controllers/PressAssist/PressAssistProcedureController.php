@@ -146,25 +146,28 @@ class PressAssistProcedureController extends Controller
 
         foreach ($procedures as $procedure) {
             $lastIndex = count($mergedProcedures) - 1;
-            //同作業順の場合同一のものがなければ追加
+            //同作業順の場合値を追加(重複は避ける)
             if ($lastIndex >= 0 && $mergedProcedures[$lastIndex]['作業順'] === $procedure['作業順']) {
                 foreach ($arrayFileds as $field) {
                     if (!is_array($mergedProcedures[$lastIndex][$field])) {
                         $mergedProcedures[$lastIndex][$field] = [$mergedProcedures[$lastIndex][$field]];
                     }
                 }
+
             } else {
-                $mergedProcedures[] = $procedure->toArray();
-                $currentIndex = count($mergedProcedures) - 1;
+                $currentIndex = count($mergedProcedures);
+                $mergedProcedures[$currentIndex] = $procedure->toArray();
                 foreach ($arrayFileds as $field) {
                     $mergedProcedures[$currentIndex][$field] = [$mergedProcedures[$currentIndex][$field]];
                 }
                 $mergedProcedures[$currentIndex]['型図画像'] = self::getImage($procedure['型図パス'])->getData()->image;
-            }
 
-            $procedure_id = $procedure['ID'];
-            $particular_instructions[$procedure_id][] = self::getParticularInstructions($procedure_id)->toArray();
+                $work_number = $procedure['作業番号'];
+                $work_order = $procedure['作業順'];
+                $particular_instructions[$currentIndex] = self::getParticularInstructions($work_number, $work_order)->toArray();
+            }
         }
+                Log::info($particular_instructions);
 
         return Inertia::render(
             'PressAssist/PressAssistMasterProcedurePreview',
@@ -175,9 +178,10 @@ class PressAssistProcedureController extends Controller
         );
     }
 
-    private function getParticularInstructions(int $procedure_id)
+    private function getParticularInstructions(int $work_number, int $work_order)
     {
-        $particular_instructions = M_Particular_Instruction::WhereProcedure_id($procedure_id)
+        $particular_instructions = M_Particular_Instruction::WhereWorkNumber($work_number)
+            ->WhereWorkOrder($work_order)
             ->orderBy('ID', 'asc')
             ->get();
 
@@ -220,10 +224,10 @@ class PressAssistProcedureController extends Controller
 
                 $particularInfo = M_Particular_Info::where('管理番号', $editedItem['管理番号'])
                     ->where('指示区分', $editedItem['指示名'])
-                    ->where('登録コード', $editedItem['表示1'])
+                    ->where('登録コード', $editedItem['登録コード'])
                     ->first();
                 if (!$particularInfo) {
-                    throw new \Exception('対応する特殊情報が見つかりません。管理番号: ' . $editedItem['管理番号'] . ' 登録コード: ' . $editedItem['表示1']);
+                    throw new \Exception('対応する特殊情報が見つかりません。管理番号: ' . $editedItem['管理番号'] . ' 登録コード: ' . $editedItem['登録コード']);
                 }
 
                 $instruction->fill([
@@ -233,8 +237,9 @@ class PressAssistProcedureController extends Controller
                     '置換フラグ' => $editedItem['置換フラグ'],
                     '条件' => $editedItem['条件'],
                     '指示名' => $particularInfo['指示区分'],
-                    '表示1' => $particularInfo['登録コード'],
-                    '表示2' => $particularInfo['表示文字列'],
+                    '登録コード' => $editedItem['登録コード'],
+                    '表示1' => $particularInfo['表示1'],
+                    '表示2' => $particularInfo['表示2'],
                     '段位置' => $particularInfo['段位置'],
                     'モニタ番号' => $particularInfo['モニタ番号'],
                     '入力ピン番号' => $particularInfo['入力ピン番号'],
