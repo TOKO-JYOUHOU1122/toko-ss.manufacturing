@@ -174,7 +174,17 @@ export default {
         current_particular_codes() {
             const list = this.particular_instructions && this.particular_instructions[this.current_index];
             if (!Array.isArray(list) || list.length === 0) return '';
-            return `特殊指示コード: ${list.map(item => item?.登録コード ?? '').filter(v => v !== '').join(',')}`;
+            let msg = "特殊指示コード:";
+            for (let i = 0; i < list.length; i++) {
+                const code = list[i]?.登録コード ?? '';
+                const input = list[i]?.入力ピン番号 ?? '';
+                const output = list[i]?.出力ピン番号 ?? '';
+                if (code !== '') {
+                    msg += (i === 0 ? '' : ',') + `${code} (入力: ${input}  出力: ${output})`;
+                }
+            }
+
+            return msg;
         }
     },
 
