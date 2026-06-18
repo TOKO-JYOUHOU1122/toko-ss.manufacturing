@@ -154,7 +154,7 @@ export default {
             入力_フットスイッチピン番号: null,
             入力_プレス完了ピン番号: null,
             出力_プレスピン番号: null,
-            出力_LEDピン番号: null,
+            出力_ライトピン番号: null,
         },
         equipment_numbers: [],
         tableFilters: {},
