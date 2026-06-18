@@ -19,7 +19,7 @@
                         <v-btn color="primary" width="200" height="50" variant="outlined" class="mx-5"
                             @click="goMasterPosition()">位置番号マスタ</v-btn>
                         <v-btn color="primary" width="200" height="50" variant="outlined" class="mx-5"
-                            @click="goMasterCylinder()">シリンダ登録マスタ</v-btn>
+                            @click="goMasterParticular()">特殊指示情報マスタ</v-btn>
                     </v-col>
                 </v-row>
             </v-container>
@@ -53,8 +53,8 @@ export default {
         goMasterPosition() {
             this.$inertia.visit(route('pressassist.mst.position'))
         },
-        goMasterCylinder() {
-            this.$inertia.visit(route('pressassist.mst.cylinder'))
+        goMasterParticular() {
+            this.$inertia.visit(route('pressassist.mst.particular'))
         },
     },
 }

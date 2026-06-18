@@ -1,25 +1,30 @@
 <template>
 
-    <Head title="プレスアシスト位置番号" />
+    <Head title="プレスアシスト特殊指示番号" />
     <UserLayout>
-        <template #header>プレスアシスト位置番号</template>
+        <template #header>プレスアシスト特殊指示番号</template>
 
         <template #main>
             <v-container fluid class="pt-3">
                 <v-row dense class="pt-3 px-2">
                     <v-col cols="12" class="d-flex justify-end">
-                        <v-select v-model="tableFilters.管理番号" label="管理番号" :items="equipment_numbers" variant="underlined"
+                        <v-select v-model="tableFilters.管理番号" label="管理番号" :items="equipment_numbers"
+                            variant="underlined" density="compact" hide-details="auto" clearable max-width="200"
+                            class="px-3"></v-select>
+                        <v-select v-model="tableFilters.指示区分" label="指示区分" :items="categories" variant="underlined"
                             density="compact" hide-details="auto" clearable max-width="200" class="px-3"></v-select>
-                        <v-text-field label="位置番号" v-model="tableFilters.位置番号" type="text" color="primary"
-                            variant="underlined" density="compact" hide-details="auto" clearable max-width="400"
-                            class="px-3" />
+                        <v-select v-model="tableFilters.段位置" label="段位置"
+                            :items="[...new Set(position_numbers.map(item => item.段位置))]" variant="underlined"
+                            density="compact" hide-details="auto" clearable max-width="200" class="px-3"></v-select>
+                        <v-text-field v-model="tableFilters.登録コード" label="登録コード" variant="underlined" density="compact"
+                            hide-details="auto" clearable max-width="200" class="px-3"></v-text-field>
                     </v-col>
                 </v-row>
                 <v-divider class="my-2"></v-divider>
                 <v-row dense class="pt-1 px-2">
                     <v-col cols="12">
-                        <v-data-table :headers="headers" :items="filteredItems" item-value="ID" items-per-page-text="表示行数"
-                            items-per-page="20" :loading="loading" density="comfortable">
+                        <v-data-table :headers="headers" :items="filteredItems" item-value="ID"
+                            items-per-page-text="表示行数" items-per-page="20" :loading="loading" density="comfortable">
                             <template v-slot:[`item.actions`]="{ item }">
                                 <v-icon size="large" color="primary" class="mr-3"
                                     @click="onEdit(item)">mdi-pencil</v-icon>
@@ -35,53 +40,59 @@
                             <span class="text-h5">{{ formTitle }}</span>
                         </v-card-title>
                         <v-card-text>
+                            <v-row no-gutters class="mb-3">
+                                <v-col cols="6">
+                                    <v-select v-model="editedItem.指示区分" label="指示区分" :items="categories"
+                                        variant="underlined" hide-details="auto" max-width="300"></v-select>
+                                </v-col>
+                                <v-col cols="6">
+                                    <v-text-field v-model="editedItem.登録コード" label="登録コード" variant="underlined"
+                                        hide-details="auto" maxlength=20 :rules="rulesInsert"></v-text-field>
+                                </v-col>
+                            </v-row>
                             <v-row dense>
                                 <v-col cols="6">
                                     <v-select v-model="editedItem.管理番号" label="管理番号" :items="equipment_numbers"
-                                        item-title="equipment_numbers" item-value="equipment_numbers" variant="underlined"
-                                        hide-details="auto" max="15"></v-select>
+                                        item-title="equipment_numbers" item-value="equipment_numbers"
+                                        variant="underlined" hide-details="auto" max="15"></v-select>
                                 </v-col>
                                 <v-col cols="4">
-                                    <v-text-field v-model="editedItem.位置番号" label="位置番号" variant="underlined"
-                                        hide-details="auto" maxlength=20></v-text-field>
+                                    <v-select v-model="editedItem.段位置" label="段位置" :items="positions"
+                                        variant="underlined" hide-details="auto" max="15"></v-select>
                                 </v-col>
                                 <v-col cols="2">
                                     <v-text-field v-model="editedItem.モニタ番号" label="モニタ番号" variant="underlined"
                                         hide-details="auto" maxlength=20></v-text-field>
                                 </v-col>
                             </v-row>
-                            <v-row no-gutters class="mt-5 mb-n2">
-                                <v-col cols="12">
-                                    <span class="text-subtitle-2">入力ピン</span>
-                                </v-col>
-                            </v-row>
                             <v-row dense>
-                                <v-col cols="4">
-                                    <v-text-field label="検知ピン番号" v-model="editedItem.入力_検知ピン番号" type="number" color="primary"
-                                        variant="underlined" min="0" hide-details />
-                                </v-col>
-                                <v-col cols="4">
-                                    <v-text-field label="FSピン番号" v-model="editedItem.入力_フットスイッチピン番号" type="number" color="primary"
-                                        variant="underlined" min="0" hide-details />
-                                </v-col>
-                                <v-col cols="4">
-                                    <v-text-field label="プレス完了ピン番号" v-model="editedItem.入力_プレス完了ピン番号" type="number" color="primary"
-                                        variant="underlined" min="0" hide-details />
-                                </v-col>
-                            </v-row>
-                            <v-row no-gutters class="mt-5 mb-n2">
                                 <v-col cols="12">
-                                    <span class="text-subtitle-2">出力ピン</span>
+                                    <v-text-field label="条件" v-model="editedItem.条件" type="text" color="primary"
+                                        variant="underlined" hide-details />
                                 </v-col>
                             </v-row>
-                            <v-row dense>
+                            <v-row v-if="editedItem && editedItem.指示区分 == 'シリンダ'" dense>
                                 <v-col cols="4">
-                                    <v-text-field label="プレスピン番号" v-model="editedItem.出力_プレスピン番号" type="number" color="primary"
-                                        variant="underlined" min="0" hide-details />
+                                    <v-text-field label="入力ピン番号" v-model="editedItem.入力ピン番号" type="number"
+                                        color="primary" variant="underlined" min="0" hide-details />
                                 </v-col>
                                 <v-col cols="4">
-                                    <v-text-field label="LEDピン番号" v-model="editedItem.出力_ライトピン番号" type="number" color="primary"
-                                        variant="underlined" min="0" hide-details />
+                                    <v-text-field label="出力ピン番号" v-model="editedItem.出力ピン番号" type="number"
+                                        color="primary" variant="underlined" min="0" hide-details />
+                                </v-col>
+                                <v-col cols="4">
+                                    <v-checkbox v-model="editedItem.置換フラグ" label="置換フラグ" hide-details="auto"
+                                        true-value="1" false-value="0" density="compact" />
+                                </v-col>
+                            </v-row>
+                            <v-row>
+                                <v-col cols="6">
+                                    <v-text-field :label="editedItem && editedItem.指示区分 == '治具照合' ? '治具No' : '表示1'"
+                                        v-model="editedItem.表示1" color="primary" variant="underlined" hide-details />
+                                </v-col>
+                                <v-col cols="6">
+                                    <v-text-field :label="editedItem && editedItem.指示区分 == '治具照合' ? '照合値' : '表示2'"
+                                        v-model="editedItem.表示2" color="primary" variant="underlined" hide-details />
                                 </v-col>
                             </v-row>
                         </v-card-text>
@@ -93,7 +104,7 @@
                         </v-card-actions>
                     </v-card>
                 </v-dialog>
-                <ConfirmDialog v-model="dialogDelete" :title="`位置番号:【${editedItem.位置番号}】`" message="上記位置番号を削除します。"
+                <ConfirmDialog v-model="dialogDelete" :title="`登録コード:【${editedItem.登録コード}】`" message="上記登録コードを削除します。"
                     btn1Text="キャンセル" btn2Text="削除" @btn1Click="closeDelete()" @btn2Click="deleteItemConfirm()" />
             </v-container>
         </template>
@@ -119,7 +130,10 @@ import ConfirmDialog from '../../Components/ConfirmDialog.vue'
 import { downloadCsv, openFilePicker, uploadCsv } from '../../util';
 
 defineProps({
-    positions: {
+    position_numbers: {
+        type: Array,
+    },
+    particulars: {
         type: Array,
     },
 });
@@ -128,18 +142,17 @@ defineProps({
 <script>
 
 export default {
-    name: 'PressAssistMasterPosition',
+    name: 'PressAssistMasterParticular',
     data: () => ({
         headers: [
             { title: 'ID', key: 'ID', headerProps: { class: 'd-none' }, cellProps: { class: 'd-none' } },
-            { title: '管理番号', key: '管理番号', width: '100px' },
-            { title: '位置番号', key: '位置番号', width: '100px' },
-            { title: 'モニタ番号', key: 'モニタ番号', width: '50px' },
-            { title: '検知ピン', key: '入力_検知ピン番号', width: '50px', align: 'center' },
-            { title: 'FSピン', key: '入力_フットスイッチピン番号', width: '50px', align: 'center' },
-            { title: '完了ピン', key: '入力_プレス完了ピン番号', width: '50px', align: 'center' },
-            { title: 'プレスピン', key: '出力_プレスピン番号', width: '50px', align: 'center' },
-            { title: 'LEDピン', key: '出力_ライトピン番号', width: '50px', align: 'center' },
+            { title: '管理番号', key: '管理番号', width: '60px' },
+            { title: '指示区分', key: '指示区分', width: '80px' },
+            { title: '登録コード', key: '登録コード', width: '80px' },
+            { title: '段位置', key: '段位置', width: '60px' },
+            { title: '条件', key: '条件', width: '200px', align: 'center' },
+            { title: '入力ピン', key: '入力ピン番号', width: '60px', align: 'center' },
+            { title: '出力ピン', key: '出力ピン番号', width: '60px', align: 'center' },
             { title: '', key: 'actions', sortable: false, width: '80px' },
         ],
         editable_items: [],
@@ -148,15 +161,19 @@ export default {
         defaultItem: {
             ID: null,
             管理番号: '',
-            位置番号: '',
+            指示区分: '',
+            登録コード: '',
+            段位置: '',
             モニタ番号: '',
-            入力_検知ピン番号: null,
-            入力_フットスイッチピン番号: null,
-            入力_プレス完了ピン番号: null,
-            出力_プレスピン番号: null,
-            出力_ライトピン番号: null,
+            条件: '',
+            入力ピン番号: null,
+            出力ピン番号: null,
+            置換フラグ: false,
+            表示1: '',
+            表示2: '',
         },
         equipment_numbers: [],
+        categories: [],
         tableFilters: {},
         loading: false,
         dialogDelete: false,
@@ -170,43 +187,47 @@ export default {
         formTitle() {
             return this.editedIndex === -1 ? 'マスタ作成' : 'マスタ編集';
         },
+        positions() {
+            if (!this.editedItem.管理番号) return [];
+
+            let target_items = this.position_numbers.filter(item => item.管理番号 === this.editedItem.管理番号);
+            return [...new Set(target_items.map(item => item.段位置))];
+        },
         filteredItems() {
             return this.editable_items.filter(item => {
                 return (
                     (!this.tableFilters.管理番号 || item.管理番号 == this.tableFilters.管理番号)
-                    && (!this.tableFilters.位置番号 || item.位置番号.includes(this.tableFilters.位置番号))
+                    && (!this.tableFilters.指示区分 || item.指示区分 == this.tableFilters.指示区分)
+                    && (!this.tableFilters.段位置 || item.段位置 == this.tableFilters.段位置)
+                    && (!this.tableFilters.登録コード || item.登録コード.includes(this.tableFilters.登録コード))
                 )
             });
-        }
+        },
+        rulesInsert(v) {
+            return [
+                v => !!v || '登録コードは必須です',
+                v => !this.editable_items.some(item => item.登録コード === v) || '既に存在する登録コードです',
+            ]
+        },
     },
 
     methods: {
         init: function () {
-            this.editable_items = this.positions;
+            this.editable_items = this.particulars;
+            this.equipment_numbers = [...new Set(this.editable_items.map(item => item.管理番号))];
+            this.categories = [...new Set(this.editable_items.map(item => item.指示区分))];
             this.editedItem = Object.assign({}, this.defaultItem);
             this.tableFilters = Object.assign({}, this.defaultItem);
         },
 
-        fetchPositions() {
-            axios.get(route('pressassist.mst.position.fetch'))
+        fetchParticulars() {
+            axios.get(route('pressassist.mst.particular.fetch'))
                 .then(function (response) {
                     this.editable_items = response.data;
                 }.bind(this))
                 .catch(function (error) {
 
                 }.bind(this))
-        },
-
-        getSelectList() {
-            const groups = this.editable_items.reduce((acc, item) => {
-                for (const key of ['管理番号']) {
-                    const keyValue = item[key];
-                    (acc[keyValue] ??= []).push(item);
-                }
-                return acc;
-            }, {});
-
-            this.equipment_numbers = [...new Set(this.editable_items.map(item => item.管理番号))];
         },
 
         /**
@@ -246,12 +267,12 @@ export default {
          */
         saveEdit() {
             this.loading = true
-            axios.post(route('pressassist.mst.position.regist'), {
+            axios.post(route('pressassist.mst.particular.regist'), {
                 editedItem: this.editedItem
             })
                 .then(function (response) {
                     if (!response.data.errMessage) {
-                        this.closeEdit()
+                        this.close()
                     } else {
                         alert('マスタの更新に失敗しました。\n' + response.data.errMessage)
                         console.log(response.data.errMessage)
@@ -262,7 +283,7 @@ export default {
                 }.bind(this))
                 .finally(() => {
                     this.loading = false
-                    this.fetchPositions()
+                    this.fetchParticulars()
                 });
         },
 
@@ -279,7 +300,7 @@ export default {
 
         deleteItemConfirm() {
             this.loading = true
-            axios.post(route('pressassist.mst.position.delete'), {
+            axios.post(route('pressassist.mst.particular.delete'), {
                 ID: this.editedItem.ID,
             })
                 .then(function (response) {
@@ -295,7 +316,7 @@ export default {
                 }.bind(this))
                 .finally(() => {
                     this.loading = false
-                    this.fetchPositions()
+                    this.fetchParticulars()
                 });
         },
 
@@ -304,14 +325,18 @@ export default {
                 alert('管理番号を選択してください。');
                 return;
             }
-            let param = { equipment_number: this.tableFilters.管理番号, position_number: this.tableFilters.位置番号 };
-            downloadCsv('pressassist.mst.position.export', param)
+            let param = {
+                equipment_number: this.tableFilters.管理番号,
+                category: this.tableFilters.指示区分,
+                position: this.tableFilters.段位置,
+            };
+            downloadCsv('pressassist.mst.particular.export', param)
         },
 
         async dataImport() {
             let file = null;
             try {
-                file = await openFilePicker('ファイルを選択',[{ name: 'CSV Files', extensions: ['csv'] }]);
+                file = await openFilePicker('ファイルを選択', [{ name: 'CSV Files', extensions: ['csv'] }]);
             } catch (error) {
                 return;
             }
@@ -320,24 +345,15 @@ export default {
             const csvFile = fileGenarater(file, 'text/csv');
 
             try {
-                await uploadCsv('pressassist.mst.position.import', csvFile, {});
+                await uploadCsv('pressassist.mst.particular.import', csvFile, {});
                 alert('インポートが完了しました。');
-                this.fetchPositions();
+                this.fetchParticulars();
             } catch (error) {
                 console.error(error);
                 alert(error.message);
             }
         },
     },
-
-    watch: {
-        editable_items: {
-            deep: true,
-            handler() {
-                this.getSelectList();
-            }
-        },
-    }
 }
 </script>
 

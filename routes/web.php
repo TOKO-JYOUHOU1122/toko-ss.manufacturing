@@ -8,6 +8,7 @@ use App\Http\Controllers\UtilityController;
 use App\Http\Controllers\PressAssist\PressAssistItemController;
 use App\Http\Controllers\PressAssist\PressAssistPositionController;
 use App\Http\Controllers\PressAssist\PressAssistProcedureController;
+use App\Http\Controllers\PressAssist\PressAssistParticularController;
 
 #工場依頼出庫
 Route::get('/issuerequest/home', [IssueRequestController::class, 'home'])->name('issuerequest.home');
@@ -50,4 +51,15 @@ Route::prefix('PressAssist')->name('pressassist.')->group(function () {
     Route::get('/master/procedure/fetch', [PressAssistProcedureController::class, 'fetchProcedures'])->name('mst.procedure.fetch');
     Route::post('/master/procedure/regist', [PressAssistProcedureController::class, 'registProcedures'])->name('mst.procedure.regist');
     Route::post('/master/procedure/delete', [PressAssistProcedureController::class, 'deleteProcedures'])->name('mst.procedure.delete');
+    Route::get('/master/procedure/preview', [PressAssistProcedureController::class, 'previewProcedures'])->name('mst.procedure.preview');
+    Route::get('/master/procedure/particular/fetch', [PressAssistProcedureController::class, 'fetchParticularInstructions'])->name('mst.procedure.particular.fetch');
+    Route::post('/master/procedure/particular/regist', [PressAssistProcedureController::class, 'registParticularInstruction'])->name('mst.procedure.particular.regist');
+    Route::post('/master/procedure/particular/delete', [PressAssistProcedureController::class, 'deleteParticularInstruction'])->name('mst.procedure.particular.delete');
+    Route::get('/master/procedure/particular/options', [PressAssistProcedureController::class, 'fetchParticularOptions'])->name('mst.procedure.particular.options');
+    Route::get('/master/particular', [PressAssistParticularController::class, 'particular'])->name('mst.particular');
+    Route::get('/master/particular/fetch', [PressAssistParticularController::class, 'fetchParticular'])->name('mst.particular.fetch');
+    Route::post('/master/particular/regist', [PressAssistParticularController::class, 'registParticular'])->name('mst.particular.regist');
+    Route::post('/master/particular/delete', [PressAssistParticularController::class, 'deleteParticular'])->name('mst.particular.delete');
+    Route::post('/master/particular/export', [PressAssistParticularController::class, 'exportParticular'])->name('mst.particular.export');
+    Route::post('/master/particular/import', [PressAssistParticularController::class, 'importParticular'])->name('mst.particular.import');
 });

@@ -2,8 +2,6 @@
 const require$$0 = require("electron");
 const { contextBridge, ipcRenderer } = require$$0;
 contextBridge.exposeInMainWorld("electron", {
-  isElectron: true,
-  appUrl: process.env.APP_URL || null,
   // ファイル選択ダイアログ（openFile）
   openFileDialog: (options = {}) => ipcRenderer.invoke("dialog:openFile", options),
   // ディレクトリ選択（必要なら）

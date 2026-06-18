@@ -14,6 +14,7 @@ class M_Particular_Instruction extends Model
     protected $fillable = [
         '管理番号',
         '指示名',
+        '登録コード',
         '段位置',
         'モニタ番号',
         '段位置',
@@ -25,32 +26,42 @@ class M_Particular_Instruction extends Model
         '金型番号',
         '表示1',
         '表示2',
+        '作業番号',
+        '作業順',
     ];
 
-
-    public $timestamps = true;
+    public $incrementing = true;
+    public $timestamps = false;
 
     public function scopeWhereId($query, $id) {
-        if($id == null) return $query;
-
         return $query->where('ID', $id);
     }
 
     public function scopeWhereEquipmentNumber($query, $equipment_number) {
-        if($equipment_number == null) return $query;
-
         return $query->where('管理番号', $equipment_number);
     }
 
     public function scopeWhereDivision($query, $division) {
-        if($division == null) return $query;
-
         return $query->where('指示名', 'like', '%' . $division . '%');
     }
 
-    public function scopeWherePosition($query, $position_number) {
-        if($position_number == null) return $query;
+    public function scopeWhereCode($query, $code) {
+        return $query->where('登録コード', $code);
+    }
 
+    public function scopeWherePosition($query, $position_number) {
         return $query->where('位置番号', 'like', '%' . $position_number . '%');
+    }
+
+    public function scopeWhereProcedure_id($query, $procedure_id) {
+        return $query->where('プレスアシスト加工手順_ID', $procedure_id);
+    }
+
+    public function scopeWhereWorkNumber($query, $work_number) {
+        return $query->where('作業番号', $work_number);
+    }
+
+    public function scopeWhereWorkOrder($query, $work_order) {
+        return $query->where('作業順', $work_order);
     }
 }

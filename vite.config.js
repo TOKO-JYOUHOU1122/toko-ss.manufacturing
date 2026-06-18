@@ -2,7 +2,6 @@ import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
 import vuetify from 'vite-plugin-vuetify';
-import electron from 'vite-plugin-electron/simple';
 
 export default defineConfig({
     plugins: [
@@ -17,10 +16,6 @@ export default defineConfig({
             },
         }),
         vuetify({ autoImport: true }),
-        electron({
-            main: { entry: 'electron/main.cjs' },
-            preload: { input: { preload: 'electron/preload.cjs' } },
-        }),
-
     ],
+    base: './',
 });

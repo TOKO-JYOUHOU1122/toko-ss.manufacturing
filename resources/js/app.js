@@ -24,8 +24,8 @@ createInertiaApp({
         ),
     setup({ el, App, props, plugin }) {
         return createApp({ render: () => h(App, props) })
-            .use(vuetify)
             .use(plugin)
+            .use(vuetify)
             .use(ZiggyVue)
             .mount(el);
     },

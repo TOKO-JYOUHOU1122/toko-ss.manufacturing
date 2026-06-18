@@ -5,6 +5,8 @@
 /public/storage
 /storage/*.key
 /vendor
+/release
+dist/
 .env
 .env.backup
 .env.production
@@ -17,3 +19,8 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+*.exe
+*.dmg
+*.AppImage
+latest.yml
+*.blockmap
