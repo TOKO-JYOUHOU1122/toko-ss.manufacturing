@@ -251,7 +251,7 @@ export default {
             })
                 .then(function (response) {
                     if (!response.data.errMessage) {
-                        this.close()
+                        this.closeEdit()
                     } else {
                         alert('マスタの更新に失敗しました。\n' + response.data.errMessage)
                         console.log(response.data.errMessage)
