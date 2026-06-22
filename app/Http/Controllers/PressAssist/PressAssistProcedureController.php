@@ -4,6 +4,7 @@ namespace App\Http\Controllers\PressAssist;
 
 use App\Http\Controllers\Controller;
 use App\Models\PressAssist\M_Position;
+use App\Models\PressAssist\M_Item;
 use App\Models\PressAssist\M_Particular_Info;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,6 +17,30 @@ class PressAssistProcedureController extends Controller
 {
     public function procedure(Request $request)
     {
+        // work_numbers / positions は初期描画のボトルネックを避けるため、
+        // クライアントから fetchMasters を非同期で取得させる。
+        $procedures = [];
+        if ($request->work_number) {
+            // fetchProcedures は ['procedures' => Collection, 'items' => Collection] を返すため、
+            // 加工手順の Collection のみを取り出して配列化する。
+            $fetched = self::fetchProcedures($request);
+            $procedures = ($fetched['procedures'] ?? collect())->toArray();
+        }
+
+        return Inertia::render(
+            'PressAssist/PressAssistMasterProcedure',
+            [
+                'procedures' => $procedures,
+            ]
+        );
+    }
+
+    /**
+     * 画面初期表示用のマスターデータ（作業番号一覧と段位置一覧）を返す。
+     * クライアントから非同期（axios）で呼び出される想定。
+     */
+    public function fetchMasters()
+    {
         $work_numbers = M_Procedure::select('作業番号')
             ->groupBy('作業番号')
             ->OrderByWorkNumberNumeric()
@@ -26,16 +51,11 @@ class PressAssistProcedureController extends Controller
             ->orderBy('位置番号', 'asc')
             ->get()
             ->toArray();
-        $procedures = $request->work_number ? self::fetchProcedures($request)->toArray() : [];
 
-        return Inertia::render(
-            'PressAssist/PressAssistMasterProcedure',
-            [
-                'work_numbers' => $work_numbers,
-                'positions' => $positions,
-                'procedures' => $procedures,
-            ]
-        );
+        return [
+            'work_numbers' => $work_numbers,
+            'positions' => $positions,
+        ];
     }
 
     public function fetchProcedures(Request $request)
@@ -57,7 +77,12 @@ class PressAssistProcedureController extends Controller
             return $item;
         });
 
-        return $procedures;
+        $items = M_Item::select('品名', '条件')
+            ->WhereWorkNumber($request->work_number)
+            ->orderBy('ID', 'asc')
+            ->get();
+
+        return ['procedures' => $procedures, 'items' => $items];
     }
 
     public function registProcedures(Request $request)

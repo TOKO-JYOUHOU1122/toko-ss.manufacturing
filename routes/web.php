@@ -48,6 +48,7 @@ Route::prefix('PressAssist')->name('pressassist.')->group(function () {
     Route::post('/master/position/export', [PressAssistPositionController::class, 'exportPosition'])->name('mst.position.export');
     Route::post('/master/position/import', [PressAssistPositionController::class, 'importPosition'])->name('mst.position.import');
     Route::get('/master/procedure', [PressAssistProcedureController::class, 'procedure'])->name('mst.procedure');
+    Route::get('/master/procedure/masters', [PressAssistProcedureController::class, 'fetchMasters'])->name('mst.procedure.masters');
     Route::get('/master/procedure/fetch', [PressAssistProcedureController::class, 'fetchProcedures'])->name('mst.procedure.fetch');
     Route::post('/master/procedure/regist', [PressAssistProcedureController::class, 'registProcedures'])->name('mst.procedure.regist');
     Route::post('/master/procedure/delete', [PressAssistProcedureController::class, 'deleteProcedures'])->name('mst.procedure.delete');

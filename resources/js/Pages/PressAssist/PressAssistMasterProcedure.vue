@@ -11,49 +11,57 @@
                         <v-alert type="info" variant="plain" v-if="!work_number" density="compact">
                             作業番号を選択してください
                         </v-alert>
+                        <v-label v-else class="pr-3">使用されている品名: <span class="font-weight-bold text-red">{{ str_items }}</span></v-label>
                         <v-select v-model="work_number" label="作業番号" :items="editable_work_numbers" variant="underlined"
                             density="compact" hide-details="auto" clearable max-width="200" class="px-3"></v-select>
                     </v-col>
                 </v-row>
                 <v-divider class="my-2"></v-divider>
-                <draggable v-model="editable_items" item-key="_dragKey" handle=".drag-handle" @start="isDragging = true" @end="onDragEnd">
+                <draggable v-model="editable_items" item-key="_dragKey" handle=".drag-handle" @start="isDragging = true"
+                    @end="onDragEnd">
                     <template #item="{ element: item, index }">
-                    <div :class="{ 'even-row': index % 2 === 1 }">
-                    <v-row no-gutters class="py-3" :style="{ opacity: item.削除区分 ? 0.4 : 1 }">
-                        <v-col cols="12" class="d-flex align-end">
-                            <v-icon class="drag-handle pl-2 pr-5" size="30" color="gray">mdi-dots-grid</v-icon>
-                            <v-label class="pr-3 pb-1" style="width: 20px;">{{ item.作業順 }} .</v-label>
-                            <v-select v-model="item.管理番号" label="管理番号" :items="equipment_numbers" variant="underlined"
-                                hide-details="auto" max-width="150" class="px-3"></v-select>
-                            <v-select v-model="item.段位置" label="段位置" :items="targetPositions(item.管理番号)"
-                                variant="underlined" hide-details="auto" max-width="220" class="px-3" multiple chips closable-chips></v-select>
-                            <v-text-field v-model="item.型図パス" label="型図パス" variant="underlined" hide-details="auto"
-                                class="pl-3 pr-0 text-disabled-input" readonly max-width="800"></v-text-field>
-                            <v-icon size="x-large" color="primary" @click="selectImage(item)"
-                                class="mr-3">mdi-folder-open</v-icon>
-                            <HoverTooltip
-                                :text="'数字の桁数が画像の分割数で、\n1が表示する場所です。\n例1) 01 画像の右1/2を表示\n例2) 1000 画像の左端1/4のみ表示\n例3) 110 画像の左から2/3を表示'">
-                                <template #activator="{ props }">
-                                    <v-text-field v-model="item.画像位置" label="画像位置" v-bind="props" variant="underlined"
-                                        max-width="100" hide-details="auto"></v-text-field>
-                                </template>
-                            </HoverTooltip>
-                            <v-checkbox v-model="item.反転フラグ" label="加工前に反転" hide-details="auto" class="pl-3 px-5"
-                                true-value="1" false-value="0" density="compact" />
-                            <HoverTooltip
-                                :text="'エアシリンダや治具照合等の\n特殊指示を登録します'" location="left">
-                                <template #activator="{ props }">
-                                    <v-badge :content="item.特殊指示ID ? item.特殊指示ID.length : 0" :color="item.特殊指示ID && item.特殊指示ID.length > 0 ? 'red' : 'grey'" offset-x="20" offset-y="5">
-                                        <v-icon size="40" color="green" class="mr-3" @click="openParticular(item.作業順)" v-bind="props">mdi-toy-brick-plus</v-icon>
-                                    </v-badge>
-                                </template>
-                            </HoverTooltip>
-                            <v-icon v-if="item.削除区分" color="secondary" size="40"
-                                @click="item.削除区分 = false">mdi-delete-restore</v-icon>
-                            <v-icon v-else color="red" size="40" @click="item.削除区分 = true">mdi-delete</v-icon>
-                        </v-col>
-                    </v-row>
-                    </div>
+                        <div :class="{ 'even-row': index % 2 === 1 }">
+                            <v-row no-gutters class="py-3" :style="{ opacity: item.削除区分 ? 0.4 : 1 }">
+                                <v-col cols="12" class="d-flex align-end">
+                                    <v-icon class="drag-handle pl-2 pr-5" size="30" color="gray">mdi-dots-grid</v-icon>
+                                    <v-label class="pr-3 pb-1" style="width: 20px;">{{ item.作業順 }} .</v-label>
+                                    <v-select v-model="item.管理番号" label="管理番号" :items="equipment_numbers"
+                                        variant="underlined" hide-details="auto" max-width="150"
+                                        class="px-3"></v-select>
+                                    <v-select v-model="item.段位置" label="段位置" :items="targetPositions(item.管理番号)"
+                                        variant="underlined" hide-details="auto" max-width="220" class="px-3" multiple
+                                        chips closable-chips></v-select>
+                                    <v-text-field v-model="item.型図パス" label="型図パス" variant="underlined"
+                                        hide-details="auto" class="pl-3 pr-0 text-disabled-input" readonly
+                                        max-width="800"></v-text-field>
+                                    <v-icon size="x-large" color="primary" @click="selectImage(item)"
+                                        class="mr-3">mdi-folder-open</v-icon>
+                                    <HoverTooltip
+                                        :text="'数字の桁数が画像の分割数で、\n1が表示する場所です。\n例1) 01 画像の右1/2を表示\n例2) 1000 画像の左端1/4のみ表示\n例3) 110 画像の左から2/3を表示'">
+                                        <template #activator="{ props }">
+                                            <v-text-field v-model="item.画像位置" label="画像位置" v-bind="props"
+                                                variant="underlined" max-width="100" hide-details="auto"></v-text-field>
+                                        </template>
+                                    </HoverTooltip>
+                                    <v-checkbox v-model="item.反転フラグ" label="加工前に反転" hide-details="auto"
+                                        class="pl-3 px-5" true-value="1" false-value="0" density="compact" />
+                                    <HoverTooltip :text="'エアシリンダや治具照合等の\n特殊指示を登録します'" location="left">
+                                        <template #activator="{ props }">
+                                            <v-badge :content="item.特殊指示ID ? item.特殊指示ID.length : 0"
+                                                :color="item.特殊指示ID && item.特殊指示ID.length > 0 ? 'red' : 'grey'"
+                                                offset-x="20" offset-y="5">
+                                                <v-icon size="40" color="green" class="mr-3"
+                                                    @click="openParticular(item.作業順)"
+                                                    v-bind="props">mdi-toy-brick-plus</v-icon>
+                                            </v-badge>
+                                        </template>
+                                    </HoverTooltip>
+                                    <v-icon v-if="item.削除区分" color="secondary" size="40"
+                                        @click="item.削除区分 = false">mdi-delete-restore</v-icon>
+                                    <v-icon v-else color="red" size="40" @click="item.削除区分 = true">mdi-delete</v-icon>
+                                </v-col>
+                            </v-row>
+                        </div>
                     </template>
                 </draggable>
                 <v-row v-if="work_number" no-gutters class="pt-3">
@@ -64,13 +72,15 @@
 
                 <ParticularLink ref="particular" @saved="fetchProcedures()"></ParticularLink>
                 <ConfirmDialog v-model="dialog_confirm.is_show" :title="dialog_confirm.title"
-                    :message="dialog_confirm.message" :btn1Text="dialog_confirm.btn1Text"
-                    :btn2Text="dialog_confirm.btn2Text" @btn1Click="onDialogBtn1Click()"
-                    @btn2Click="onDialogBtn2Click()">
-                    <div
-                        v-if="isSameObject(dialog_confirm, dialog_insert) || isSameObject(dialog_confirm, dialog_copy)">
-                        <span>{{ dialog_confirm.message }}</span>
-                        <v-text-field v-model="insert_work_number" label="作業番号" :items="editable_work_numbers"
+                    :btn1Text="dialog_confirm.btn1Text" :btn2Text="dialog_confirm.btn2Text"
+                    @btn1Click="onDialogBtn1Click()" @btn2Click="onDialogBtn2Click()">
+                    <div>
+                        <span v-if="!isSameObject(dialog_confirm, dialog_insert)">
+                            {{ dialog_confirm.message }}
+                            <br>使用されている品名: <span class="text-red font-weight-bold">{{ str_items }}</span></span>
+                        <v-text-field
+                            v-if="isSameObject(dialog_confirm, dialog_insert) || isSameObject(dialog_confirm, dialog_copy)"
+                            v-model="insert_work_number" label="作業番号" :items="editable_work_numbers"
                             variant="underlined" clearable max-width="300" class="px-3"
                             :rules="rulesInsert"></v-text-field>
                     </div>
@@ -113,12 +123,6 @@ import { openFilePicker } from '../../util';
 import draggable from 'vuedraggable';
 
 defineProps({
-    work_numbers: {
-        type: Array,
-    },
-    positions: {
-        type: Array,
-    },
     procedures: {
         type: Array,
     },
@@ -130,6 +134,10 @@ defineProps({
 export default {
     name: 'PressAssistMasterProcedure',
     data: () => ({
+        // マスターは mounted 後に非同期で取得するため data で保持する
+        work_numbers: [],
+        positions: [],
+        masters_loaded: false,
         editable_work_numbers: [],
         editable_items: [],
         editable_items_Init: [],
@@ -144,9 +152,9 @@ export default {
             反転フラグ: false,
             削除区分: false,
         },
-        equipment_numbers: [],
         work_number: null,
         insert_work_number: null,
+        target_items: [],
 
         loading: false,
         dialog_insert: { is_show: false, title: '作業番号追加', message: '以下の作業番号を追加します', btn1Text: 'キャンセル', btn2Text: '追加' },
@@ -169,26 +177,61 @@ export default {
                 v => !this.editable_work_numbers.includes(v) || '既に存在する作業番号です',
             ]
         },
+        // 管理番号 -> 段位置配列 のルックアップを1回だけ構築（行ごとのfilter/mapを回避）
+        positionsByEquipment() {
+            const map = new Map();
+            for (const pos of this.positions ?? []) {
+                let list = map.get(pos.管理番号);
+                if (!list) {
+                    list = [];
+                    map.set(pos.管理番号, list);
+                }
+                list.push(pos.段位置);
+            }
+            return map;
+        },
+        // 管理番号の一覧（positionsから一度だけ算出）
+        equipment_numbers() {
+            return Array.from(this.positionsByEquipment.keys());
+        },
+        str_items() {
+            // target_items の各要素を「品名 + 条件」で文字列化し、カンマ区切りで結合する
+            return this.target_items
+                .map(item => (item.品名 ?? '') + (item.条件 ? ' ' + item.条件 : ''))
+                .join(', ');
+        },
     },
 
     methods: {
         init: function () {
-            this.editable_work_numbers = this.work_numbers;
             this.editable_items = this.groupItems(this.procedures);
             if (this.editable_items.length > 0) this.work_number = this.editable_items[0].作業番号;
 
-            const groups = this.positions.reduce((acc, item) => {
-                for (const key of ['管理番号']) {
-                    const keyValue = item[key];
-                    (acc[keyValue] ??= []).push(item);
-                }
-                return acc;
-            }, {});
-            this.equipment_numbers = [...new Set(this.positions.map(pos => pos.管理番号))];
+            // work_numbers / positions は非同期でサーバーから取得する。
+            // 取得途中に v-select が空になるのを避けるため、
+            // editable_work_numbers はマスター取得完了後に反映させる。
+            this.fetchMasters();
+        },
+
+        /**
+         * 作業番号一覧と段位置マスタを非同期で取得する
+         */
+        fetchMasters() {
+            axios.get(route('pressassist.mst.procedure.masters'))
+                .then((response) => {
+                    this.work_numbers = response.data.work_numbers ?? [];
+                    this.positions = response.data.positions ?? [];
+                    this.editable_work_numbers = this.work_numbers;
+                    this.masters_loaded = true;
+                })
+                .catch((err) => {
+                    console.error(err);
+                });
         },
 
         targetPositions(equipment_number) {
-            return this.positions.filter(pos => pos.管理番号 === equipment_number).map(pos => pos.段位置);
+            // computedのMapから参照（同じ管理番号には同一配列参照を返すため、v-selectの不要な再評価を抑制）
+            return this.positionsByEquipment.get(equipment_number) ?? [];
         },
 
         fetchProcedures() {
@@ -204,7 +247,8 @@ export default {
                 }
             })
                 .then(function (response) {
-                    this.editable_items = this.groupItems(response.data);
+                    this.editable_items = this.groupItems(response.data.procedures);
+                    this.target_items = response.data.items;
                 }.bind(this))
                 .catch(function (error) {
 
@@ -360,18 +404,22 @@ export default {
         },
 
         groupItems(items) {
+            // findによるO(n^2)を避けるため、複合キーのMapで集約する
             const grouped = [];
+            const indexMap = new Map();
             let keyCounter = 0;
             for (const item of items) {
-                const existing = grouped.find(g =>
-                    g.作業番号 === item.作業番号 &&
-                    String(g.作業順) === String(item.作業順) &&
-                    g.管理番号 === item.管理番号 &&
-                    g.型図パス === item.型図パス &&
-                    g.画像位置 === item.画像位置 &&
-                    g.反転フラグ === item.反転フラグ
-                );
-                if (existing) {
+                const compositeKey = [
+                    item.作業番号,
+                    String(item.作業順),
+                    item.管理番号,
+                    item.型図パス,
+                    item.画像位置,
+                    item.反転フラグ,
+                ].join('\u0001');
+                const existingIdx = indexMap.get(compositeKey);
+                if (existingIdx !== undefined) {
+                    const existing = grouped[existingIdx];
                     if (item.段位置 && !existing.段位置.includes(item.段位置)) {
                         existing.段位置.push(item.段位置);
                     }
@@ -381,6 +429,7 @@ export default {
                         段位置: item.段位置 ? [item.段位置] : [],
                         _dragKey: keyCounter++,
                     });
+                    indexMap.set(compositeKey, grouped.length - 1);
                 }
             }
             return grouped;
