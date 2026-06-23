@@ -137,7 +137,6 @@ export default {
         // マスターは mounted 後に非同期で取得するため data で保持する
         work_numbers: [],
         positions: [],
-        masters_loaded: false,
         editable_work_numbers: [],
         editable_items: [],
         editable_items_Init: [],
@@ -222,10 +221,10 @@ export default {
                     this.work_numbers = response.data.work_numbers ?? [];
                     this.positions = response.data.positions ?? [];
                     this.editable_work_numbers = this.work_numbers;
-                    this.masters_loaded = true;
                 })
                 .catch((err) => {
                     console.error(err);
+                    alert('マスターの取得に失敗しました: ' + err);
                 });
         },
 
