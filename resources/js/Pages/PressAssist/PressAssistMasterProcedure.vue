@@ -137,7 +137,6 @@ export default {
         // マスターは mounted 後に非同期で取得するため data で保持する
         work_numbers: [],
         positions: [],
-        masters_loaded: false,
         editable_work_numbers: [],
         editable_items: [],
         editable_items_Init: [],
@@ -222,9 +221,9 @@ export default {
                     this.work_numbers = response.data.work_numbers ?? [];
                     this.positions = response.data.positions ?? [];
                     this.editable_work_numbers = this.work_numbers;
-                    this.masters_loaded = true;
                 })
                 .catch((err) => {
+                    alert('マスタの取得に失敗しました。\n' + err)
                     console.error(err);
                 });
         },
@@ -404,32 +403,25 @@ export default {
         },
 
         groupItems(items) {
-            // findによるO(n^2)を避けるため、複合キーのMapで集約する
             const grouped = [];
             const indexMap = new Map();
             let keyCounter = 0;
             for (const item of items) {
-                const compositeKey = [
-                    item.作業番号,
-                    String(item.作業順),
-                    item.管理番号,
-                    item.型図パス,
-                    item.画像位置,
-                    item.反転フラグ,
-                ].join('\u0001');
-                const existingIdx = indexMap.get(compositeKey);
+                const existingIdx = indexMap.get(item.作業順);
                 if (existingIdx !== undefined) {
                     const existing = grouped[existingIdx];
-                    if (item.段位置 && !existing.段位置.includes(item.段位置)) {
+                    if (item.ID && !existing.ID.includes(item.ID)) {
+                        existing.ID.push(item.ID);
                         existing.段位置.push(item.段位置);
                     }
                 } else {
                     grouped.push({
                         ...item,
+                        ID: item.ID ? [item.ID] : [],
                         段位置: item.段位置 ? [item.段位置] : [],
                         _dragKey: keyCounter++,
                     });
-                    indexMap.set(compositeKey, grouped.length - 1);
+                    indexMap.set(item.作業順, grouped.length - 1);
                 }
             }
             return grouped;
@@ -438,15 +430,15 @@ export default {
         expandItems(items) {
             const expanded = [];
             for (const item of items) {
-                const positions = Array.isArray(item.段位置) ? item.段位置 : [item.段位置];
-                if (positions.length === 0) {
-                    expanded.push({ ...item, 段位置: null });
-                } else {
-                    for (const pos of positions) {
-                        expanded.push({ ...item, 段位置: pos });
-                    }
+                const count = Math.max(item.ID ? item.ID.length : 0, item.段位置 ? item.段位置.length : 0);
+                for (let i = 0; i < count; i++) {
+                    const id = item.ID && item.ID.length > i ? item.ID[i] : null;
+                    const position = item.段位置 && item.段位置.length > i ? item.段位置[i] : null;
+                    const is_deleted = id !== null && position === null ? true : item.削除区分; // IDがあるのに段位置がない場合は削除扱い
+                    expanded.push({ ...item, ID: id, 段位置: position, 削除区分: is_deleted });
                 }
             }
+
             return expanded;
         },
     },

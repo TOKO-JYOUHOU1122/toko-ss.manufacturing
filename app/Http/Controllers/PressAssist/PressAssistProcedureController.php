@@ -23,7 +23,7 @@ class PressAssistProcedureController extends Controller
         if ($request->work_number) {
             // fetchProcedures は ['procedures' => Collection, 'items' => Collection] を返すため、
             // 加工手順の Collection のみを取り出して配列化する。
-            $fetched = self::fetchProcedures($request);
+            $fetched = $this->fetchProcedures($request);
             $procedures = ($fetched['procedures'] ?? collect())->toArray();
         }
 
@@ -185,11 +185,11 @@ class PressAssistProcedureController extends Controller
                 foreach ($arrayFileds as $field) {
                     $mergedProcedures[$currentIndex][$field] = [$mergedProcedures[$currentIndex][$field]];
                 }
-                $mergedProcedures[$currentIndex]['型図画像'] = self::getImage($procedure['型図パス'])->getData()->image;
+                $mergedProcedures[$currentIndex]['型図画像'] = $this->getImage($procedure['型図パス'])->getData()->image;
 
                 $work_number = $procedure['作業番号'];
                 $work_order = $procedure['作業順'];
-                $particular_instructions[$currentIndex] = self::getParticularInstructions($work_number, $work_order)->toArray();
+                $particular_instructions[$currentIndex] = $this->getParticularInstructions($work_number, $work_order)->toArray();
             }
         }
                 Log::info($particular_instructions);
