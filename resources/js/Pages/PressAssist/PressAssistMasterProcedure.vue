@@ -385,8 +385,9 @@ export default {
 
         async selectImage(item) {
             try {
-                let filePath = await openFilePicker('画像を選択', [{ name: 'Images', extensions: ['png'] }]);
-                if (filePath) item.型図パス = filePath;
+                // openFilePicker は { filePath, fileName, buffer } を返すため、絶対パスのみを取り出す
+                const result = await openFilePicker('画像を選択', [{ name: 'Images', extensions: ['png'] }]);
+                if (result && result.filePath) item.型図パス = result.filePath;
             } catch (err) {
             }
         },

@@ -83,6 +83,7 @@ ipcMain.handle('dialog:openFile', async (event, options = {}) => {
     const fileName = path.basename(filePath);
 
     return {
+        filePath, // 選択ファイルの絶対パス
         fileName,
         buffer,   // Buffer をそのまま返す
     };
